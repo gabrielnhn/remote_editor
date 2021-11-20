@@ -1,1 +1,1 @@
-# remote_editor
+# Editor remoto de arquivos C
