@@ -14,6 +14,4 @@
 
 int raw_socket_connection(char *device);
 
-int RawSocketConnection(char *device, struct sockaddr_ll* address);
-
 #endif
