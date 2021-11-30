@@ -3,6 +3,9 @@
 
 #include <sys/types.h>
 #include <limits.h>     /* for CHAR_BIT */
+#include <string.h>
+#include <stdio.h>
+
 
 // auxiliar macros
 #define BITMASK(b)      (1 << ((b) % CHAR_BIT))           // generate bit mask
@@ -22,5 +25,9 @@
 // if (BITTEST(bitarray, 35)) { ... }      // testar o bit 35
 
 void print_bits(size_t const size, void const * const ptr);
+
+void print_bits_to_str(size_t const size, void const * const ptr, char* str);
+
+void bit_copy(char* src, int src_start, char* dest, int dest_start, size_t n);
 
 #endif

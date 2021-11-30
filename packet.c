@@ -12,7 +12,8 @@ typedef struct{
     unsigned data_size: 4;
     unsigned packet_id: 3;
     unsigned type: 4;
-    unsigned data_and_parity: (16 + 8);
+    char data_and_parity[6];
+    // unsigned data_and_parity: (16 + 8);
 } packet_t;
 
 // [0:7] Header
@@ -26,7 +27,11 @@ typedef struct{
 
 int get_parity(packet_t* packet)
 {
-
+    char str[100] = "";
+    print_bits_to_str(sizeof(packet_t), packet, str);
+    // print_bits(sizeof(packet_t), packet);
+    printf("%s", str);
+    return 0;
 }
 
 int make_packet(packet_t* packet, int origin, int dest, int size, int id, int type, void* data)
@@ -37,18 +42,50 @@ int make_packet(packet_t* packet, int origin, int dest, int size, int id, int ty
     packet->data_size = size;
     packet->packet_id = id;
     packet->type = type;
-    packet->data_and_parity = data;
-
     
+    memset(packet->data_and_parity, 0, 6);
 
-    packet->data_and_parity = 15;
+    // memcpy(packet->data_and_parity, data, size);
 
-    print_bits(sizeof(packet_t), &packet);
+
+    get_parity(packet);
+
+    // packet->data_and_parity = 15;
+
+    // print_bits(sizeof(packet_t), &packet);
+    return 0;
+}
+
+int make_packet_array(char* packet, char origin, char dest, char size, char id, char type, void* data)
+{
+    packet = malloc(sizeof(BITNSLOTS(50)));
+    if (packet == NULL)
+        return -1;
+
+    // EMPTY PACKET!
+    memset(packet, 0, sizeof(BITNSLOTS(50)));
+    // print_bits(sizeof(BITNSLOTS(50)), packet);
+    // printf("\n");
+
+    // SET HEADER
+    char h = HEADER;
+    // print_bits(sizeof(h), &h);    
+    // printf("\n");
+    bit_copy((char*) &h, 0, packet, 0, 8);
+
+    // SET ORIGIN
+    bit_copy((char*) &origin, 0, packet, 8, 2);
+
+    print_bits(sizeof(BITNSLOTS(50)), packet);
     return 0;
 }
 
 int main()
 {
-    make_packet();
+    // packet_t packet;
+    int data = 42;
+    char* packet = NULL;
+    make_packet_array(packet, CLIENT, SERVER, sizeof(data), 0, 0, &data);
+    // printf("%d", sizeof(data));
     return 0;
 }
