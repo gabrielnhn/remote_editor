@@ -5,16 +5,38 @@
 #define SERVER 0b10
 #define CLIENT 0b01
 
-typedef struct{
-    unsigned header: 8;
-    unsigned dest_address: 2;
-    unsigned origin_address: 2;
-    unsigned data_size: 4;
-    unsigned packet_id: 3;
-    unsigned type: 4;
-    char data_and_parity[6];
-    // unsigned data_and_parity: (16 + 8);
-} packet_t;
+// typedef struct{
+//     unsigned header: 8;
+//     unsigned dest_address: 2;
+//     unsigned origin_address: 2;
+//     unsigned data_size: 4;
+//     unsigned packet_id: 3;
+//     unsigned type: 4;
+//     char data_and_parity[6];
+//     // unsigned data_and_parity: (16 + 8);
+// } packet_t;
+
+// int make_packet(packet_t* packet, int origin, int dest, int size, int id, int type, void* data)
+// {
+//     packet->header = HEADER;
+//     packet->origin_address = origin;
+//     packet->dest_address = dest;
+//     packet->data_size = size;
+//     packet->packet_id = id;
+//     packet->type = type;
+    
+//     memset(packet->data_and_parity, 0, 6);
+
+//     // memcpy(packet->data_and_parity, data, size);
+
+
+//     get_parity(packet);
+
+//     // packet->data_and_parity = 15;
+
+//     // print_bits(sizeof(packet_t), &packet);
+//     return 0;
+// }
 
 // [0:7] Header
 // [8:9] Destination Address
@@ -31,28 +53,6 @@ int get_parity(packet_t* packet)
     print_bits_to_str(sizeof(packet_t), packet, str);
     // print_bits(sizeof(packet_t), packet);
     printf("%s", str);
-    return 0;
-}
-
-int make_packet(packet_t* packet, int origin, int dest, int size, int id, int type, void* data)
-{
-    packet->header = HEADER;
-    packet->origin_address = origin;
-    packet->dest_address = dest;
-    packet->data_size = size;
-    packet->packet_id = id;
-    packet->type = type;
-    
-    memset(packet->data_and_parity, 0, 6);
-
-    // memcpy(packet->data_and_parity, data, size);
-
-
-    get_parity(packet);
-
-    // packet->data_and_parity = 15;
-
-    // print_bits(sizeof(packet_t), &packet);
     return 0;
 }
 
