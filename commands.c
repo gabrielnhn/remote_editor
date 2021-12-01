@@ -10,6 +10,7 @@
 #include <unistd.h>
 #include <stdio.h>
 #include <limits.h>
+#include <iso646.h>
 
 int get_cwd(char* buf) {
 
@@ -41,17 +42,9 @@ bool cd(char* path, char* current_dir)
     DIR *mydir;
     mydir = opendir(path);
 
-    if (mydir != NULL)
-    {
-        if (get_realpath(path, current_dir))
-        {
-            retval = true;
-            chdir(current_dir);
-        }
-        else 
-            return false;
-    }
-    else
+    if ((mydir != NULL) and get_realpath(path, current_dir) and (chdir(current_dir) == 0))
+        retval = true;
+    else 
         retval = false;
 
     closedir(mydir);
