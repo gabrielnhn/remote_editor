@@ -29,13 +29,11 @@ int main()
         fgets(command, 100, stdin);
         memset(packet.data, 0, DATA_BYTES);
         bit_copy(command, 0, packet.data, 0, 8*DATA_BYTES);
-        packet.data_size = DATA_BYTES;
-        printf("size: %d \n", packet.data_size);
-        printf("parity: %d \n", packet.parity);
-        printf("data: %s", packet.data);
+        packet.data_size = strlen(command) + 1;
+
+        memset(packet_array, 0, PACKET_MAX_BYTES);
         make_packet_array(packet_array, &packet);
 
-        print_bits(PACKET_MAX_BYTES, packet_array);
         retval = send(socket, &packet_array, PACKET_MAX_BYTES, 0);
 
     }

@@ -77,13 +77,9 @@ int get_packet_from_array(char* array, packet_t* packet)
     bit_copy(array, index, (char*) &packet->type, 0, 4);
     index += 4;
 
-    printf("size: %d \n", packet->data_size);
-    // printf("parity: %d \n", packet.parity);
-    // printf("data: %s", packet.data);
 
     // GET DATA
     memset(packet->data, 0, DATA_BYTES);
-    printf("size: %d \n", packet->data_size);
     bit_copy(array, index, (char*) packet->data, 0, packet->data_size*8);
     index += packet->data_size*8;
 
@@ -97,11 +93,11 @@ int get_packet_from_array(char* array, packet_t* packet)
 
 int make_packet_array(char* array, packet_t* packet)
 {
-    char dest = packet->dest_address;
-    char origin = packet->origin_address;
-    char size = packet->data_size;
-    char id = packet->packet_id;
-    char type = packet->type;
+    unsigned char dest = packet->dest_address;
+    unsigned char origin = packet->origin_address;
+    unsigned char size = packet->data_size;
+    unsigned char id = packet->packet_id;
+    unsigned char type = packet->type;
     void* data = packet->data;
 
     int index = 0;

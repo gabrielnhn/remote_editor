@@ -10,27 +10,25 @@ int main()
     int socket = raw_socket_connection("lo");
 
     int retval;
+    int counter = 0;
     while(1)
     {
+        printf("counter: %d\n", counter);
         retval = recv(socket, &packet_array, PACKET_MAX_BYTES, 0);
 
         if (retval != -1)
             {
                 get_packet_from_array(packet_array, &packet);
-                print_bits(PACKET_MAX_BYTES, packet_array);
-
                 if (packet.parity != get_parity(&packet))
                 {
                     printf("%d != %d", packet.parity, get_parity(&packet));
-                    printf("size: %d \n", packet.data_size);
-                    printf("parity: %d \n", packet.parity);
-                    printf("data: %s", packet.data);
                     perror("BRUH");
                     exit(0);
                 }
-                printf("%d\n", *packet.data);
+                printf("%s\n", packet.data);
             }
         else
             printf("Nothing.");
+        counter++;
     }   
 }
