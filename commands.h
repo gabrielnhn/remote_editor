@@ -14,5 +14,6 @@
 #define EDIT 8
 #define COMPILAR 9
 
+int ls(char* path);
 
 #endif

@@ -4,30 +4,29 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <dirent.h>
+#include <string.h>
 
-int ls(int argc, char* argv[])
+int ls(char* path)
 {
     DIR *mydir;
     struct dirent *myfile;
     struct stat mystat;
 
     char buf[512];
-    mydir = opendir(argv[1]);
+    mydir = opendir(path);
     while((myfile = readdir(mydir)) != NULL)
     {
-        sprintf(buf, "%s/%s", argv[1], myfile->d_name);
+        sprintf(buf, "%s/%s", path, myfile->d_name);
         stat(buf, &mystat);
-        printf("%zu",mystat.st_size);
-        printf(" %s\n", myfile->d_name);
+
+        if (strncmp(myfile->d_name, ".", 1)) // hidden file
+            printf("%s\n", myfile->d_name);
     }
     closedir(mydir);
 }
 
-int main()
-{
-    setvbuf(stdout, NULL, _IONBF, 0);
-    char* str[2];
-    str[1] = ".";
-    ls(0, str);
-    return 0;
-}
+// int main()
+// {
+//     ls(".");
+//     return 0;
+// }
