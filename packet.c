@@ -14,7 +14,7 @@ typedef struct{
     unsigned char data_size;
     unsigned char packet_id;
     unsigned char type;
-    long data;
+    char data[BITNSLOTS(16)];
     unsigned char parity; 
 } packet_t;
 
@@ -58,57 +58,122 @@ typedef struct{
 //     return 0;
 // }
 
-int make_packet_array(char* packet, char dest, char origin, char size, char id, char type, void* data)
+int get_packet_from_array(char* array, packet_t* packet)
 {
+    char dest = 0;
+    char origin = 0;
+    char size = 0;
+    char id = 0;
+    char type = 0;
+
+    int index = 0;
+
+    // GET HEADER
+    char h;
+    bit_copy(array, 0, (char*) &h, 0, 8);
+
+    index = 8;
+    // GET DEST
+    bit_copy(array, index, &dest, 0, 2);
+
+    index += 2;  
+
+    // GET ORIGIN
+    bit_copy(array, index, &origin, 0, 2);
+    index += 2;
+
+    // GET SIZE
+    bit_copy(array, index, (char*) &size, 0, 4);
+    index += 4;
+
+    // GET ID
+    bit_copy(array, index, (char*) &id, 0, 4);
+    index += 4;
+
+    // GET TYPE
+    bit_copy(array, index, (char*) &type, 0, 4);
+    index += 4;
+
+    // GET DATA
+    bit_copy(array, index, packet->data, 0, size);
+    index += size;
+
+    packet->dest_address =  dest;
+    packet->origin_address =  origin;
+    packet->data_size =  size;
+    packet->packet_id =  id;
+    packet->type =  type;
+
+    // print_bits(BITNSLOTS(PACKET_MAX), array);
+    return 0;
+}
+
+
+int make_packet_array(char* array, packet_t* packet)
+{
+    char dest = packet->dest_address;
+    char origin = packet->origin_address;
+    char size = packet->data_size;
+    char id = packet->packet_id;
+    char type = packet->type;
+    void* data = packet->data;
+
     int index = 0;
 
     // EMPTY PACKET!
-    memset(packet, 0, BITNSLOTS(PACKET_MAX));
-    // print_bits(sizeof(BITNSLOTS(PACKET_MAX)), packet);
-    // printf("\n");
+    memset(array, 0, BITNSLOTS(PACKET_MAX));
 
     // SET HEADER
     char h = HEADER;
-    // print_bits(sizeof(h), &h);    
-    // printf("\n");
-    bit_copy((char*) &h, 0, packet, 0, 8);
+    bit_copy((char*) &h, 0, array, 0, 8);
 
     index += 8;
 
     // SET DEST
-    bit_copy((char*) &dest, 0, packet, index, 2);
+    bit_copy((char*) &dest, 0, array, index, 2);
     index += 2;  
 
     // SET ORIGIN
-    bit_copy((char*) &origin, 0, packet, index, 2);
+    bit_copy((char*) &origin, 0, array, index, 2);
     index += 2;
 
     // SET SIZE
-    bit_copy((char*) &size, 0, packet, index, 4);
+    bit_copy((char*) &size, 0, array, index, 4);
     index += 4;
 
     // SET ID
-    bit_copy((char*) &id, 0, packet, index, 4);
+    bit_copy((char*) &id, 0, array, index, 4);
     index += 4;
 
     // SET TYPE
-    bit_copy((char*) &type, 0, packet, index, 4);
+    bit_copy((char*) &type, 0, array, index, 4);
     index += 4;
 
     // SET DATA
-    bit_copy((char*) data, 0, packet, index, size);
+    bit_copy((char*) data, 0, array, index, size);
     index += size;
 
-    print_bits(BITNSLOTS(PACKET_MAX), packet);
     return 0;
 }
 
 int main()
 {
-    // packet_t packet;
+    packet_t packet1, packet2;
     char data = 42;
-    char packet[BITNSLOTS(PACKET_MAX)];
-    make_packet_array(packet, SERVER, CLIENT, sizeof(char)*8, 0, 0, &data);
-    // printf("%d", sizeof(data));
+    char array[BITNSLOTS(PACKET_MAX)];
+    bit_copy(&data, 0, packet1.data, 0, 8);
+    packet1.dest_address = SERVER;
+    packet1.origin_address = CLIENT;
+    packet1.data_size = sizeof(char)*8;
+    packet1.type = 0;
+    packet1.packet_id = 0;
+
+    make_packet_array(array, &packet1);
+
+    get_packet_from_array(array, &packet2);
+
+    char* new_data = (char*) (packet2.data);
+    printf("%d", *new_data);
+
     return 0;
 }

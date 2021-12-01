@@ -5,11 +5,16 @@ void bit_copy(char* src, int src_start, char* dest, int dest_start, size_t n)
     int counter;
     for(counter = 0; counter < n; counter++)
     {
-        if (BITTEST(src, counter))
+        if (BITTEST(src, src_start + counter))
+        {
+            // printf("Set");
             BITSET(dest, dest_start + counter);
+        }
         else
+        {
+            // printf("Clear");
             BITCLEAR(dest, dest_start + counter);
-
+        }
     }
 }
 
