@@ -32,14 +32,20 @@
 // [21: 20 + Size] # if Size > 0 # DATA
 // [21 + Size: 29 + Size] Parity
 
-// int get_parity(packet_t* packet)
-// {
-//     char str[100] = "";
-//     print_bits_to_str(sizeof(packet_t), packet, str);
-//     // print_bits(sizeof(packet_t), packet);
-//     printf("%s", str);
-//     return 0;
-// }
+
+unsigned char get_parity(packet_t* packet)
+{
+    unsigned char parity = packet->data_size;
+    parity = parity ^ packet->packet_id;
+    parity = parity ^ packet->type;
+
+    for(int i = 0; i < DATA_BYTES; i++)
+    {
+        parity = parity ^ packet->data[i];
+    }
+
+    return parity;
+}
 
 int get_packet_from_array(char* array, packet_t* packet)
 {
@@ -48,6 +54,7 @@ int get_packet_from_array(char* array, packet_t* packet)
     char size = 0;
     char id = 0;
     char type = 0;
+    unsigned char parity = 0;
 
     int index = 0;
 
@@ -78,14 +85,22 @@ int get_packet_from_array(char* array, packet_t* packet)
     index += 4;
 
     // GET DATA
+    memset(packet->data, 0, DATA_BYTES);
     bit_copy(array, index, packet->data, 0, size);
     index += size;
+
+    // GET PARITY
+    bit_copy(array, index, (char*) &parity, 0, 8);
+    // printf("%d\n", parity);
+    index += 8;
 
     packet->dest_address =  dest;
     packet->origin_address =  origin;
     packet->data_size =  size;
     packet->packet_id =  id;
     packet->type =  type;
+    packet->parity = parity;
+
 
     // print_bits(BITNSLOTS(PACKET_MAX), array);
     return 0;
@@ -136,27 +151,34 @@ int make_packet_array(char* array, packet_t* packet)
     bit_copy((char*) data, 0, array, index, size);
     index += size;
 
-    return 0;
-}
+    unsigned char parity = get_parity(packet);
+    printf("bruh %d\n", parity);
+    packet->parity = parity;
 
-int not_main()
-{
-    packet_t packet1, packet2;
-    char data = 42;
-    char array[PACKET_MAX_BYTES];
-    bit_copy(&data, 0, packet1.data, 0, 8);
-    packet1.dest_address = SERVER;
-    packet1.origin_address = CLIENT;
-    packet1.data_size = sizeof(char)*8;
-    packet1.type = 0;
-    packet1.packet_id = 0;
-
-    make_packet_array(array, &packet1);
-
-    get_packet_from_array(array, &packet2);
-
-    char* new_data = (char*) (packet2.data);
-    printf("%d", *new_data);
+    // SET PARITY
+    bit_copy((char*) &parity, 0, array, index, size);
+    index += 8;
 
     return 0;
 }
+
+// int not_main()
+// {
+//     packet_t packet1, packet2;
+//     char data = 42;
+//     char array[PACKET_MAX_BYTES];
+//     bit_copy(&data, 0, packet1.data, 0, 8);
+//     packet1.dest_address = SERVER;
+//     packet1.origin_address = CLIENT;
+//     packet1.data_size = sizeof(char)*8;
+//     packet1.type = 0;
+//     packet1.packet_id = 0;
+
+//     make_packet_array(array, &packet1);
+
+//     get_packet_from_array(array, &packet2);
+
+//     char* new_data = (char*) (packet2.data);
+
+//     return 0;
+// }

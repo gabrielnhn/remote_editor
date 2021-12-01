@@ -17,6 +17,12 @@ int main()
         if (retval != -1)
             {
                 get_packet_from_array(packet_array, &packet);
+                if (packet.parity != get_parity(&packet))
+                {
+                    printf("%d != %d", packet.parity, get_parity(&packet));
+                    perror("BRUH");
+                    exit(0);
+                }
                 printf("%d\n", *packet.data);
             }
         else

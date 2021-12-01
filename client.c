@@ -11,6 +11,7 @@ int main()
 
     char data = 42;
 
+    memset(packet.data, 0, DATA_BYTES);
     bit_copy(&data, 0, packet.data, 0, 8);
     packet.dest_address = SERVER;
     packet.origin_address = CLIENT;
@@ -27,9 +28,9 @@ int main()
     {
         // BITNSLOTS(PACKET_MAX_BITS)
         retval = send(socket, &packet_array, 14, 0);
-        printf("sent. retval=%d\n", retval);
+        // printf("sent. retval=%d\n", retval);
         // printf("%d\n", errno);
-        printf("%d\n", PACKET_MAX_BYTES);
+        // printf("%d\n", packet.parity);
 
 
     }

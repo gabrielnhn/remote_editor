@@ -5,6 +5,7 @@
 
 
 #define PACKET_MAX_BYTES 20
+#define DATA_BYTES 16
 #define HEADER 0b01111110
 #define SERVER 0b10
 #define CLIENT 0b01
@@ -16,12 +17,14 @@ typedef struct{
     unsigned char data_size;
     unsigned char packet_id;
     unsigned char type;
-    char data[16];
+    char data[DATA_BYTES];
     unsigned char parity; 
 } packet_t;
 
 int make_packet_array(char* array, packet_t* packet);
 
 int get_packet_from_array(char* array, packet_t* packet);
+
+unsigned char get_parity(packet_t* packet);
 
 #endif
