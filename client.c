@@ -12,7 +12,7 @@ char server_dir[STR_MAX];
 
 int get_command(char* command)
 {
-    printf("client > ");
+    printf("client@%s : ", client_dir);
     char* fgets_retval = fgets(command, STR_MAX, stdin);
     
     if (fgets_retval == NULL)
@@ -30,7 +30,11 @@ int get_command(char* command)
     }
     else if (strncmp(command, "lcd", strlen("lcd")) == 0)
     {
-        return LCD;
+        if (cd(command + 4, client_dir))
+            printf("updated\n");
+        else
+            printf("BRUH\n");
+        return NOP; // local operation
     } 
     else if (strncmp(command, "ls", strlen("ls")) == 0)
     {
@@ -67,7 +71,10 @@ int main()
     packet.origin_address = CLIENT;
 
     int socket = raw_socket_connection("lo");
-    strcpy(client_dir, ".") ;
+    
+    get_realpath(".", client_dir);
+
+    // strcpy(client_dir, ".") ;
 
 
     char command[STR_MAX];
