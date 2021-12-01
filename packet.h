@@ -4,7 +4,7 @@
 #include "bitwise.h"
 
 
-#define PACKET_MAX 46
+#define PACKET_MAX_BITS 46
 #define HEADER 0b01111110
 #define SERVER 0b10
 #define CLIENT 0b01

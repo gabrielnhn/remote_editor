@@ -1,11 +1,12 @@
 #include "network.h"
 #include "packet.h"
+#include "errno.h"
 
 
 int main()
 {
     packet_t packet;
-    char packet_array[BITNSLOTS(PACKET_MAX)];
+    char packet_array[BITNSLOTS(PACKET_MAX_BITS)];
 
 
     char data = 42;
@@ -24,8 +25,10 @@ int main()
     int retval;
     while(1)
     {
-        retval = send(socket, packet_array, BITNSLOTS(PACKET_MAX), 0);
+        // BITNSLOTS(PACKET_MAX_BITS)
+        retval = send(socket, &packet_array, 100, 0);
         printf("sent. retval=%d\n", retval);
+        // printf("%d\n", errno);
 
     }
 }
