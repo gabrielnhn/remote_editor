@@ -2,7 +2,7 @@
 #define __PACKET__
 
 #include "bitwise.h"
-
+#include <stdbool.h>
 
 #define DATA_BYTES 16
 #define PACKET_MAX_BYTES (6 + DATA_BYTES)
@@ -20,6 +20,8 @@ typedef struct{
     char data[DATA_BYTES];
     unsigned char parity; 
 } packet_t;
+
+bool valid_packet(packet_t* packet);
 
 int make_packet_array(char* array, packet_t* packet);
 

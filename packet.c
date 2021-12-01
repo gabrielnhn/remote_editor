@@ -1,37 +1,14 @@
 #include "network.h"
 #include "packet.h"
 
-// int make_packet(packet_t* packet, int origin, int dest, int size, int id, int type, void* data)
-// {
-//     packet->header = HEADER;
-//     packet->origin_address = origin;
-//     packet->dest_address = dest;
-//     packet->data_size = size;
-//     packet->packet_id = id;
-//     packet->type = type;
-    
-//     memset(packet->data_and_parity, 0, 6);
+bool valid_packet(packet_t* packet)
+{
+    if (packet->header != HEADER)
+        return false;
 
-//     // memcpy(packet->data_and_parity, data, size);
-
-
-//     get_parity(packet);
-
-//     // packet->data_and_parity = 15;
-
-//     // print_bits(sizeof(packet_t), &packet);
-//     return 0;
-// }
-
-// [0:7] Header
-// [8:9] Destination Address
-// [10:11] Origin Address
-// [12:15] Data Size
-// [16:19] Sequencialization (packet ID)
-// [20] Type
-// [21: 20 + Size] # if Size > 0 # DATA
-// [21 + Size: 29 + Size] Parity
-
+    if (get_parity(packet) != packet->parity)
+        return false;
+}
 
 unsigned char get_parity(packet_t* packet)
 {
@@ -52,8 +29,7 @@ int get_packet_from_array(char* array, packet_t* packet)
     int index = 0;
 
     // GET HEADER
-    char h;
-    bit_copy(array, 0, (char*) &h, 0, 8);
+    bit_copy(array, 0, (char*) &packet->header, 0, 8);
 
     // GET DEST
     index = 8;
@@ -145,24 +121,3 @@ int make_packet_array(char* array, packet_t* packet)
 
     return 0;
 }
-
-// int not_main()
-// {
-//     packet_t packet1, packet2;
-//     char data = 42;
-//     char array[PACKET_MAX_BYTES];
-//     bit_copy(&data, 0, packet1.data, 0, 8);
-//     packet1.dest_address = SERVER;
-//     packet1.origin_address = CLIENT;
-//     packet1.data_size = sizeof(char)*8;
-//     packet1.type = 0;
-//     packet1.packet_id = 0;
-
-//     make_packet_array(array, &packet1);
-
-//     get_packet_from_array(array, &packet2);
-
-//     char* new_data = (char*) (packet2.data);
-
-//     return 0;
-// }
