@@ -76,16 +76,10 @@ int main()
             packet.type = 0;
             packet.packet_id = 0;
             make_packet_array(packet_array, &packet);
-
-            for(int i = 0; i < packet.data_size; i++)
-            {       
-                printf("%c", packet.data[i]);
-            }
-
-            printf("parity %d\n", packet.parity);
-
             
             send_retval = send(socket, &packet_array, PACKET_MAX_BYTES, 0);
+            if (send_retval == -1)
+                printf("Error: nothing was sent.");
         }
     }
 }
