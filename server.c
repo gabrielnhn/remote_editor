@@ -8,12 +8,12 @@ int main()
     char packet_array[PACKET_MAX_BYTES];
 
     int socket = raw_socket_connection("lo");
+    printf("Connected.\n");
+    printf("Waiting for instructions from `client`.\n\n");
 
     int retval;
-    int counter = 0;
     while(1)
     {
-        printf("counter: %d\n", counter);
         retval = recv(socket, &packet_array, PACKET_MAX_BYTES, 0);
 
         if (retval != -1)
@@ -29,6 +29,5 @@ int main()
             }
         else
             printf("Nothing.");
-        counter++;
     }   
 }
