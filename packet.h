@@ -4,7 +4,7 @@
 #include "bitwise.h"
 
 
-#define PACKET_MAX_BITS 46
+#define PACKET_MAX_BYTES 20
 #define HEADER 0b01111110
 #define SERVER 0b10
 #define CLIENT 0b01
@@ -16,7 +16,7 @@ typedef struct{
     unsigned char data_size;
     unsigned char packet_id;
     unsigned char type;
-    char data[BITNSLOTS(16)];
+    char data[16];
     unsigned char parity; 
 } packet_t;
 

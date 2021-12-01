@@ -104,7 +104,7 @@ int make_packet_array(char* array, packet_t* packet)
     int index = 0;
 
     // EMPTY PACKET!
-    memset(array, 0, BITNSLOTS(PACKET_MAX_BITS));
+    memset(array, 0, PACKET_MAX_BYTES);
 
     // SET HEADER
     char h = HEADER;
@@ -143,7 +143,7 @@ int not_main()
 {
     packet_t packet1, packet2;
     char data = 42;
-    char array[BITNSLOTS(PACKET_MAX_BITS)];
+    char array[PACKET_MAX_BYTES];
     bit_copy(&data, 0, packet1.data, 0, 8);
     packet1.dest_address = SERVER;
     packet1.origin_address = CLIENT;

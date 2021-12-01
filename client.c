@@ -6,7 +6,7 @@
 int main()
 {
     packet_t packet;
-    char packet_array[BITNSLOTS(PACKET_MAX_BITS)];
+    char packet_array[PACKET_MAX_BYTES];
 
 
     char data = 42;
@@ -26,9 +26,11 @@ int main()
     while(1)
     {
         // BITNSLOTS(PACKET_MAX_BITS)
-        retval = send(socket, &packet_array, 100, 0);
+        retval = send(socket, &packet_array, 14, 0);
         printf("sent. retval=%d\n", retval);
         // printf("%d\n", errno);
+        printf("%d\n", PACKET_MAX_BYTES);
+
 
     }
 }

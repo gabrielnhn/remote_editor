@@ -5,14 +5,14 @@
 int main()
 {
     packet_t packet;
-    char packet_array[BITNSLOTS(PACKET_MAX_BITS)];
+    char packet_array[PACKET_MAX_BYTES];
 
     int socket = raw_socket_connection("lo");
 
     int retval;
     while(1)
     {
-        retval = recv(socket, &packet_array, BITNSLOTS(PACKET_MAX_BITS), 0);
+        retval = recv(socket, &packet_array, PACKET_MAX_BYTES, 0);
 
         if (retval != -1)
             {
