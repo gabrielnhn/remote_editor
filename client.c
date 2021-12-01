@@ -5,6 +5,42 @@
 
 #define STR_MAX 100
 
+int get_command(char* command)
+{
+    bool valid;
+    
+    printf("client > ");
+    char* fgets_retval = fgets(command, STR_MAX, stdin);
+    
+    if (fgets_retval == NULL)
+    // END OF FILE
+    {
+        printf("\nExiting...\n");
+        exit(0);
+    }
+
+    if (strncmp(command, "cd", strlen("cd")) == 0)
+    {
+
+    }
+    else if (strncmp(command, "lcd", strlen("lcd")) == 0)
+    {
+
+    } 
+    else if (strncmp(command, "\n", strlen("\n")) == 0)
+    // newline
+    {
+        valid = false;
+    }
+    else
+    // Command unknown
+    {
+        valid = false;
+        command[strcspn(command, "\n")] = 0; // remove '\n'
+        printf("%s: command not found\n", command);
+    }
+}
+
 
 int main()
 {
@@ -26,37 +62,8 @@ int main()
     {
         valid = true;
 
-        // GET COMMAND
-        printf("client > ");
-        fgets_retval = fgets(command, STR_MAX, stdin);
+        ///////// GET COMMAND
         
-        if (fgets_retval == NULL)
-        // END OF FILE
-        {
-            printf("\nExiting...\n");
-            exit(0);
-        }
-
-        if (strncmp(command, "cd", strlen("cd")) == 0)
-        {
-
-        }
-        else if (strncmp(command, "lcd", strlen("lcd")) == 0)
-        {
-
-        } 
-        else if (strncmp(command, "\n", strlen("\n")) == 0)
-        // newline
-        {
-            valid = false;
-        }
-        else
-        // Command unknown
-        {
-            valid = false;
-            command[strcspn(command, "\n")] = 0; // remove '\n'
-            printf("%s: command not found\n", command);
-        }
 
         if (valid)
         {
