@@ -50,6 +50,7 @@ int main()
     packet_t packet;
     char packet_array[PACKET_MAX_BYTES];
 
+    packet.header = HEADER;
     packet.dest_address = SERVER;
     packet.origin_address = CLIENT;
 
@@ -67,14 +68,23 @@ int main()
         if (valid)
         {
             memset(packet.data, 0, DATA_BYTES);
-            bit_copy(command, 0, packet.data, 0, 8*DATA_BYTES);
+            bit_copy(command, 0, packet.data, 0, (strlen(command) + 1)*8);
+            // memcpy(packet.data, command, strlen(command) + 1);
             packet.data_size = strlen(command) + 1;
-
+            // packet.data_size = DATA_BYTES;
 
             packet.type = 0;
             packet.packet_id = 0;
             make_packet_array(packet_array, &packet);
 
+            for(int i = 0; i < packet.data_size; i++)
+            {       
+                printf("%c", packet.data[i]);
+            }
+
+            printf("parity %d\n", packet.parity);
+
+            
             send_retval = send(socket, &packet_array, PACKET_MAX_BYTES, 0);
         }
     }
