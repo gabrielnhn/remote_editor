@@ -12,7 +12,7 @@ int main()
     int retval;
     while(1)
     {
-        retval = recv(socket, &packet_array, BITNSLOTS(PACKET_MAX) - 2, 0);
+        retval = recv(socket, &packet_array, BITNSLOTS(PACKET_MAX), 0);
 
         if (retval != -1)
             // printf("%s", packet_array);
