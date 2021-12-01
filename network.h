@@ -12,6 +12,7 @@
 #include <string.h>
 #include <stdio.h>
 
+
 int raw_socket_connection(char *device);
 
 #endif

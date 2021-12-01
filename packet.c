@@ -1,22 +1,5 @@
 #include "network.h"
-#include "bitwise.h"
-
-#define HEADER 0b01111110
-#define SERVER 0b10
-#define CLIENT 0b01
-
-#define PACKET_MAX 46
-
-typedef struct{
-    unsigned char header;
-    unsigned char origin_address;
-    unsigned char dest_address;
-    unsigned char data_size;
-    unsigned char packet_id;
-    unsigned char type;
-    char data[BITNSLOTS(16)];
-    unsigned char parity; 
-} packet_t;
+#include "packet.h"
 
 // int make_packet(packet_t* packet, int origin, int dest, int size, int id, int type, void* data)
 // {
@@ -156,7 +139,7 @@ int make_packet_array(char* array, packet_t* packet)
     return 0;
 }
 
-int main()
+int not_main()
 {
     packet_t packet1, packet2;
     char data = 42;
