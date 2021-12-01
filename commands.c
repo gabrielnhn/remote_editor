@@ -23,6 +23,7 @@ int ls(char* path)
             printf("%s\n", myfile->d_name);
     }
     closedir(mydir);
+    return 0;
 }
 
 // int main()

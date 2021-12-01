@@ -6,6 +6,9 @@
 
 #define STR_MAX 100
 
+char client_dir[STR_MAX];
+char server_dir[STR_MAX];
+
 
 int get_command(char* command)
 {
@@ -29,6 +32,15 @@ int get_command(char* command)
     {
         return LCD;
     } 
+    else if (strncmp(command, "ls", strlen("ls")) == 0)
+    {
+        return LS;
+    }
+    else if (strncmp(command, "lls", strlen("lls")) == 0)
+    {
+        ls(client_dir);
+        return NOP; // local operation.
+    }
     else if (strncmp(command, "\n", strlen("\n")) == 0)
     // newline
     {
@@ -55,6 +67,8 @@ int main()
     packet.origin_address = CLIENT;
 
     int socket = raw_socket_connection("lo");
+    strcpy(client_dir, ".") ;
+
 
     char command[STR_MAX];
     int send_retval;

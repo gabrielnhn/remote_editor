@@ -1,7 +1,7 @@
 #ifndef __COMMANDS__
 #define __COMMANDS__
 
-// no operation
+// no operation / local operation
 #define NOP 0 
 
 #define CD 1
