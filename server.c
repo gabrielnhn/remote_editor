@@ -19,11 +19,9 @@ int main()
         if (retval != -1)
             {
                 get_packet_from_array(packet_array, &packet);
-                if (packet.parity != get_parity(&packet))
+                if (not valid_packet(&packet))
                 {
                     printf("%d != %d", packet.parity, get_parity(&packet));
-                    perror("BRUH");
-                    exit(0);
                 }
                 printf("%s\n", packet.data);
             }

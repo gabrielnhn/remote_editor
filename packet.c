@@ -8,6 +8,8 @@ bool valid_packet(packet_t* packet)
 
     if (get_parity(packet) != packet->parity)
         return false;
+
+    return true;
 }
 
 unsigned char get_parity(packet_t* packet)

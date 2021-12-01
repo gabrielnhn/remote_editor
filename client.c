@@ -7,8 +7,8 @@
 
 int get_command(char* command)
 {
-    bool valid;
-    
+    bool valid = true;
+
     printf("client > ");
     char* fgets_retval = fgets(command, STR_MAX, stdin);
     
@@ -39,6 +39,7 @@ int get_command(char* command)
         command[strcspn(command, "\n")] = 0; // remove '\n'
         printf("%s: command not found\n", command);
     }
+    return valid;
 }
 
 
@@ -56,13 +57,11 @@ int main()
 
     char command[STR_MAX];
     int send_retval;
-    char* fgets_retval;
     bool valid;
     while(1)
     {
-        valid = true;
-
         ///////// GET COMMAND
+        valid = get_command(command);
         
 
         if (valid)
