@@ -49,60 +49,48 @@ unsigned char get_parity(packet_t* packet)
 
 int get_packet_from_array(char* array, packet_t* packet)
 {
-    char dest = 0;
-    char origin = 0;
-    char size = 0;
-    char id = 0;
-    char type = 0;
-    unsigned char parity = 0;
-
     int index = 0;
 
     // GET HEADER
     char h;
     bit_copy(array, 0, (char*) &h, 0, 8);
 
-    index = 8;
     // GET DEST
-    bit_copy(array, index, &dest, 0, 2);
+    index = 8;
+    bit_copy(array, index, (char*) &packet->dest_address, 0, 2);
 
     index += 2;  
 
     // GET ORIGIN
-    bit_copy(array, index, &origin, 0, 2);
+    bit_copy(array, index, (char*) &packet->origin_address, 0, 2);
     index += 2;
 
     // GET SIZE
-    bit_copy(array, index, (char*) &size, 0, 4);
+    bit_copy(array, index, (char*) &packet->data_size, 0, 4);
     index += 4;
 
     // GET ID
-    bit_copy(array, index, (char*) &id, 0, 4);
+    bit_copy(array, index, (char*) &packet->packet_id, 0, 4);
     index += 4;
 
     // GET TYPE
-    bit_copy(array, index, (char*) &type, 0, 4);
+    bit_copy(array, index, (char*) &packet->type, 0, 4);
     index += 4;
+
+    printf("size: %d \n", packet->data_size);
+    // printf("parity: %d \n", packet.parity);
+    // printf("data: %s", packet.data);
 
     // GET DATA
     memset(packet->data, 0, DATA_BYTES);
-    bit_copy(array, index, packet->data, 0, size);
-    index += size;
+    printf("size: %d \n", packet->data_size);
+    bit_copy(array, index, (char*) packet->data, 0, packet->data_size*8);
+    index += packet->data_size*8;
 
     // GET PARITY
-    bit_copy(array, index, (char*) &parity, 0, 8);
-    // printf("%d\n", parity);
+    bit_copy(array, index, (char*) &packet->parity, 0, 8);
     index += 8;
 
-    packet->dest_address =  dest;
-    packet->origin_address =  origin;
-    packet->data_size =  size;
-    packet->packet_id =  id;
-    packet->type =  type;
-    packet->parity = parity;
-
-
-    // print_bits(BITNSLOTS(PACKET_MAX), array);
     return 0;
 }
 
@@ -148,16 +136,16 @@ int make_packet_array(char* array, packet_t* packet)
     index += 4;
 
     // SET DATA
-    bit_copy((char*) data, 0, array, index, size);
-    index += size;
+    bit_copy((char*) data, 0, array, index, size*8);
+    index += size*8;
 
-    unsigned char parity = get_parity(packet);
-    printf("bruh %d\n", parity);
-    packet->parity = parity;
+    packet->parity = get_parity(packet);
 
     // SET PARITY
-    bit_copy((char*) &parity, 0, array, index, size);
+    bit_copy((char*) &packet->parity, 0, array, index, 8);
     index += 8;
+
+    // print_bits(PACKET_MAX_BYTES, array);
 
     return 0;
 }

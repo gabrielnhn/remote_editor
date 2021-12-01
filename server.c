@@ -17,9 +17,14 @@ int main()
         if (retval != -1)
             {
                 get_packet_from_array(packet_array, &packet);
+                print_bits(PACKET_MAX_BYTES, packet_array);
+
                 if (packet.parity != get_parity(&packet))
                 {
                     printf("%d != %d", packet.parity, get_parity(&packet));
+                    printf("size: %d \n", packet.data_size);
+                    printf("parity: %d \n", packet.parity);
+                    printf("data: %s", packet.data);
                     perror("BRUH");
                     exit(0);
                 }

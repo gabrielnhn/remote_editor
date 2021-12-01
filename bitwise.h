@@ -29,5 +29,6 @@ void print_bits(size_t const size, void const * const ptr);
 void print_bits_to_str(size_t const size, void const * const ptr, char* str);
 
 void bit_copy(char* src, int src_start, char* dest, int dest_start, size_t n);
+// void bit_copy(unsigned char* src, int src_start, unsigned char* dest, int dest_start, size_t n);
 
 #endif

@@ -4,8 +4,8 @@
 #include "bitwise.h"
 
 
-#define PACKET_MAX_BYTES 20
 #define DATA_BYTES 16
+#define PACKET_MAX_BYTES (6 + DATA_BYTES)
 #define HEADER 0b01111110
 #define SERVER 0b10
 #define CLIENT 0b01

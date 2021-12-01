@@ -1,6 +1,8 @@
 #include "bitwise.h"
 
+// void bit_copy(unsigned char* src, int src_start, unsigned char* dest, int dest_start, size_t n)
 void bit_copy(char* src, int src_start, char* dest, int dest_start, size_t n)
+
 {
     int counter;
     for(counter = 0; counter < n; counter++)
@@ -15,6 +17,7 @@ void bit_copy(char* src, int src_start, char* dest, int dest_start, size_t n)
             // printf("Clear");
             BITCLEAR(dest, dest_start + counter);
         }
+        // printf("%d ", counter);
     }
 }
 
