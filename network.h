@@ -13,6 +13,7 @@
 #include <stdio.h>
 #include <stdbool.h>
 #include <iso646.h>
+#include <sys/time.h>
 
 int raw_socket_connection(char *device);
 

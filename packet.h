@@ -10,6 +10,9 @@
 #define SERVER 0b10
 #define CLIENT 0b01
 
+
+#define ACK 0b1000
+
 typedef struct{
     unsigned char header;
     unsigned char origin_address;

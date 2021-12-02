@@ -6,10 +6,10 @@
 #define STR_MAX 100
 
 // no operation / local operation
-#define NOP 0 
+#define NOP -1
 
 
-#define CD 1
+#define CD 0
 #define LCD 2
 #define LS 3
 #define LLS 4
