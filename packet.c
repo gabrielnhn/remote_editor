@@ -3,13 +3,18 @@
 
 bool valid_packet(packet_t* packet, int id)
 {
-    if (packet->header != HEADER)
+    if (packet->header != HEADER){
+        // printf("valid_packet header: %d != %d", packet->header, HEADER);
         return false;
+    }
 
-    if (get_parity(packet) != packet->parity)
+    if (get_parity(packet) != packet->parity){
+        // printf("PARITY %d != %d\n", get_parity(packet), packet->parity);
         return false;
+    }
 
     if (packet->packet_id != id){
+        // printf("valid_packet: %d != %d\n", packet->packet_id, id);
         return false;
     }
 
@@ -141,6 +146,7 @@ int make_packet_array(char* array, packet_t* packet)
 
 void print_packet(packet_t* packet)
 {
+    printf("packet->origin: %d\n", packet->origin_address);
     printf("packet->data_size: %d\n", packet->data_size);
     printf("packet->packet_id: %d\n", packet->packet_id);
     printf("packet->type %d\n", packet->type);

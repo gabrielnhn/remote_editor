@@ -37,6 +37,7 @@ int parse_command_packet(packet_t* packet, int* type, char* data, int* data_size
     {
         printf("GOT LS\n");
         ls_to_string(server_dir, huge_buffer);
+        // printf("%s\n", huge_buffer);
         *type = LS_CONTENT;
         return STREAM;
     }
@@ -129,38 +130,40 @@ int main()
 
                         usleep(TIME_BETWEEN_TRIES);
                     }
+
+
+                    // LS
+
+
                     else if (command_type == STREAM)
                     {
                         huge_buffer_counter = 0;
                         int length = strlen(huge_buffer) + 1;
-                        msg_counter = (msg_counter + 1);
-                        response.packet_id = msg_counter;
-                        msg_counter = (msg_counter + 1);
-                        response.type = type;
-                        make_packet_array(packet_array, &response);
 
+
+                        bool sent_succexy = true;
                         while(huge_buffer_counter < length)
                         {
-                            bool sent_succexy = false;
-
                             if (sent_succexy)
                             {
-                                memcpy(response.data, huge_buffer + huge_buffer_counter, 15);
-                                huge_buffer_counter += 16;
+                                strncpy(response.data, huge_buffer + huge_buffer_counter, 15);
+                                printf("data: %s\n", response.data);
+                                huge_buffer_counter += 15;
 
-                                response.data_size = 15;
+                                response.data_size = 16;
                                 response.type = LS_CONTENT;
 
                                 msg_counter = (msg_counter + 1) % 16;
                                 response.packet_id = msg_counter;
                                 // printf("response id %d\n", response.packet_id);
-
+                                // printf("get par: %d\n", get_parity(&response));
                                 make_packet_array(packet_array, &response);
-                                msg_counter = (msg_counter + 2) % 16;
+                                // printf("par: %d\n", response.parity);
                             }
 
                             // send response
                             printf("Sending packet, id %d, i%d/%d\n", response.packet_id, huge_buffer_counter, length);
+                            print_bits(PACKET_MAX_BYTES, packet_array);
                             send_retval = send(socket, &packet_array, PACKET_MAX_BYTES, 0);
 
                             // printf("%d, BRO WHAT\n", send_retval);
@@ -224,8 +227,8 @@ int main()
                                         local_counter++;
                                         if (request.origin_address == CLIENT)
                                         {
-                                            print_packet(&request);
-                                            printf("wanted id %d\n", msg_counter);
+                                            // print_packet(&request);
+                                            printf("wanted id %d, got %d\n", msg_counter, request.packet_id);
                                         }
                                         else
                                             printf("b.");
