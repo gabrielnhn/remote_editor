@@ -2,6 +2,7 @@
 #include "packet.h"
 #include "commands.h"
 #include <errno.h>
+#include <unistd.h>
 
 
 char server_dir[STR_MAX];

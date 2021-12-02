@@ -3,6 +3,7 @@
 #include "errno.h"
 #include <stdbool.h>
 #include "commands.h"
+#include <unistd.h>
 
 #define STR_MAX 100
 
@@ -128,6 +129,8 @@ int main()
                     if (send_retval == -1)
                         printf("Error: nothing was sent.\n");
 
+                    usleep(TIME_BETWEEN_TRIES);
+
                     // receive response
                     recv_retval = recv(socket, &packet_array, PACKET_MAX_BYTES, 0);
                     if (recv_retval == -1)
@@ -146,15 +149,14 @@ int main()
                     }
                     else
                     {
-                        printf("No response?\n");
-                        printf("valid? == %d\n", valid_packet(&response, (msg_counter + 1) % 16));
-                        printf("origin == %d\n", response.origin_address == SERVER);
-                        printf("id is %d, expected %d\n", response.packet_id, (msg_counter + 1) % 16);
-                        printf("type == ACK = %d\n", response.type == ACK);
+                        // printf("No response?\n");
 
                         counter++;
-                        if (counter > 15)
+                        if (counter > MAX_TRIES)
+                        {
+                            printf("No response from server.\n");
                             sent_succexy = true;
+                        }
                     }
                 }
                 msg_counter += 2;
