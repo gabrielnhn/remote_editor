@@ -10,11 +10,11 @@ int parse_command_packet(packet_t* packet)
     {
         if (cd(packet->data, server_dir))
         {
-            printf("Switched to %s", server_dir);
+            printf("Switched to %s\n", server_dir);
         }
         else
         {
-            printf("BRUH\n");
+            printf("cd failed\n");
         }
     }
     return 0;
@@ -27,10 +27,10 @@ int main()
 
     int socket = raw_socket_connection("lo");
     printf("Connected.\n");
+    get_realpath(".", server_dir);
+    printf("Current directory is %s\n", server_dir);
     printf("Waiting for instructions from `client`.\n\n");
 
-
-    get_realpath(".", server_dir);
 
     int retval;
     while(1)
@@ -39,7 +39,7 @@ int main()
 
         if (retval != -1)
         {
-            print_bits(PACKET_MAX_BYTES, packet_array);
+            // print_bits(PACKET_MAX_BYTES, packet_array);
             get_packet_from_array(packet_array, &packet);
             if (not valid_packet(&packet))
             {
@@ -48,13 +48,14 @@ int main()
                 // printf("packet->packet_id: %d\n", packet.packet_id);
                 // printf("packet->type %d\n", packet.type);
                 // printf("packet->data: ") ;
-                for(int i = 0; i < packet.data_size; i++)
-                {       
-                    printf("%c", packet.data[i]);
-                }
+                // for(int i = 0; i < packet.data_size; i++)
+                // {       
+                //     printf("%c", packet.data[i]);
+                // }
 
                 printf("p: %d != %d\n", packet.parity, get_parity(&packet));
             }
+            // printf("got a packet\n");
             // printf("%s\n", packet.data);
             parse_command_packet(&packet);
 

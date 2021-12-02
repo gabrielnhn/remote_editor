@@ -33,9 +33,13 @@ int parse_str_command(char* command, int* type, char* data)
     else if (strncmp(command, "lcd", strlen("lcd")) == 0)
     {
         if (cd(command + 4, client_dir))
-            printf("updated\n");
+        {
+            // printf("updated\n");
+            true;
+        }
         else
-            printf("BRUH\n");
+            printf("lcd failed.\n");
+        
         return NOP; // local operation
     } 
     else if (strncmp(command, "ls", strlen("ls")) == 0)
