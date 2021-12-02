@@ -9,6 +9,7 @@
 
 char client_dir[STR_MAX];
 char server_dir[STR_MAX];
+char trash[STR_MAX];
 
 
 int parse_str_command(char* command, int* type, char* data, int* data_size)
@@ -79,10 +80,10 @@ int main()
     request.origin_address = CLIENT;
 
     int socket = raw_socket_connection("lo");
-    struct timeval tv;
-    tv.tv_sec = 0.5;
-    tv.tv_usec = 0;
-    setsockopt(socket, SOL_SOCKET, SO_RCVTIMEO, (const char*)&tv, sizeof tv);
+    // struct timeval tv;
+    // tv.tv_sec = 0.5;
+    // tv.tv_usec = 0;
+    // setsockopt(socket, SOL_SOCKET, SO_RCVTIMEO, (const char*)&tv, sizeof tv);
     
     get_realpath(".", client_dir);
 
@@ -125,37 +126,42 @@ int main()
                     make_packet_array(packet_array, &request);
                     
                     // send request
+                    printf("sending\n");
                     send_retval = send(socket, &packet_array, PACKET_MAX_BYTES, 0);
                     if (send_retval == -1)
                         printf("Error: nothing was sent.\n");
 
                     usleep(TIME_BETWEEN_TRIES);
 
-                    // receive response
-                    recv_retval = recv(socket, &packet_array, PACKET_MAX_BYTES, 0);
-                    if (recv_retval == -1)
-                        printf("BRUH\n");
+                    // receive response FROM SERVER
+                    bool got_something = false;
+                    int local_counter = 0;
 
-                    // check response
-                    get_packet_from_array(packet_array, &response);
-                    if (valid_packet(&response, (msg_counter + 1) % 16) && response.origin_address == SERVER)
+                    while (not got_something)
                     {
-                        printf("Got something\n");
-                        if (response.type == ACK)
+                        printf("try recv\n");
+                        recv_retval = recv(socket,&packet_array, PACKET_MAX_BYTES, 0);
+
+                        if (recv_retval != -1)
+                            get_packet_from_array(packet_array, &response);
+
+                        // check response
+                        if ((recv_retval != -1) and valid_packet(&response, (msg_counter + 1) % 16)
+                            and response.origin_address == SERVER)
                         {
-                            printf("cd retval = %d.\n", *response.data);
-                            sent_succexy = true;
+                            // printf("Got something\n");
+                            if (response.type == ACK)
+                            {
+                                printf("cd retval = %d.\n", *response.data);
+                                got_something = true;
+                                sent_succexy = true;
+                            }
                         }
-                    }
-                    else
-                    {
-                        // printf("No response?\n");
-
-                        counter++;
-                        if (counter > MAX_TRIES)
+                        else
                         {
-                            printf("No response from server.\n");
-                            sent_succexy = true;
+                            local_counter++;
+                            if (local_counter > MAX_RECEIVE_TRIES)
+                                got_something = true;
                         }
                     }
                 }

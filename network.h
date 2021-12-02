@@ -15,9 +15,10 @@
 #include <iso646.h>
 #include <sys/time.h>
 
-#define MAX_TRIES 20
+#define MAX_SEND_TRIES 2
+#define MAX_RECEIVE_TRIES 5
 //microsec
-#define TIME_BETWEEN_TRIES 1000000
+#define TIME_BETWEEN_TRIES 100000
 
 int raw_socket_connection(char *device);
 
