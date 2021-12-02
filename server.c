@@ -6,6 +6,9 @@
 
 char trash[STR_MAX];
 char server_dir[STR_MAX];
+char huge_buffer[STR_MAX];
+int huge_buffer_counter = 0;
+
 
 int parse_command_packet(packet_t* packet, int* type, char* data, int* data_size)
 {
@@ -26,8 +29,17 @@ int parse_command_packet(packet_t* packet, int* type, char* data, int* data_size
         memset(data, 0, DATA_BYTES);
         memcpy(data, &retval, sizeof(char));
         *data_size = sizeof(char);
+        
+        return ONE_NIGHT_STAND;
     }
-    return 0;
+    
+    if (packet->type == LS)
+    {
+        printf("GOT LS\n");
+        ls_to_string(server_dir, huge_buffer);
+        return STREAM;
+    }
+    return NOP;
 }
 
 int main()
@@ -60,7 +72,6 @@ int main()
     int data_size;
     int msg_counter = -1;
 
-    bool should_be_ignored = true;
     bool from_client;
     bool duplicate = false;
 
@@ -97,30 +108,126 @@ int main()
                 if (valid_packet(&request, msg_counter))
                 {
                     // execute command
-                    parse_command_packet(&request, &type, data, &data_size);
+                    int command_type = parse_command_packet(&request, &type, data, &data_size);
 
-                    // set response packet
-                    memset(response.data, 0, DATA_BYTES);
-                    memcpy(response.data, data, data_size);
-                    response.data_size = data_size;
-                    response.type = type;
-                    printf("Sending retval = %d\n", *response.data);
+                    if (command_type == ONE_NIGHT_STAND)
+                    {
+                        // set response packet
+                        memset(response.data, 0, DATA_BYTES);
+                        memcpy(response.data, data, data_size);
+                        response.data_size = data_size;
+                        response.type = type;
+                        printf("Sending retval = %d\n", *response.data);
 
-                    msg_counter = (msg_counter + 1) % 16;
-                    response.packet_id = msg_counter;
-                    // printf("response id %d\n", response.packet_id);
+                        msg_counter = (msg_counter + 1) % 16;
+                        response.packet_id = msg_counter;
+                        // printf("response id %d\n", response.packet_id);
 
-                    make_packet_array(packet_array, &response);
+                        make_packet_array(packet_array, &response);
 
 
-                    // send response
-                    send_retval = send(socket, &packet_array, PACKET_MAX_BYTES, 0);
-                    if (send_retval == -1)
-                        printf("BRUH\n");
+                        // send response
+                        send_retval = send(socket, &packet_array, PACKET_MAX_BYTES, 0);
+                        if (send_retval == -1)
+                            printf("BRUH\n");
 
-                    msg_counter = (msg_counter + 1) % 16;
+                        msg_counter = (msg_counter + 1) % 16;
 
-                    usleep(TIME_BETWEEN_TRIES);
+                        usleep(TIME_BETWEEN_TRIES);
+                    }
+                    else if (command_type == STREAM)
+                    {
+                        huge_buffer_counter = 0;
+                        int length = strlen(huge_buffer) + 1;
+                        msg_counter = (msg_counter + 1);
+
+                        while(huge_buffer_counter < length)
+                        {
+                            bool sent_succexy = false;
+
+                            if (sent_succexy)
+                            {
+                                memcpy(response.data, huge_buffer + huge_buffer_counter, 15);
+                                huge_buffer_counter += 16;
+
+                                response.data_size = 15;
+                                response.type = LS_CONTENT;
+
+                                msg_counter = (msg_counter + 1) % 16;
+                                response.packet_id = msg_counter;
+                                // printf("response id %d\n", response.packet_id);
+
+                                make_packet_array(packet_array, &response);
+                                msg_counter = (msg_counter + 1) % 16;
+                            }
+                            // send response
+                            printf("Sending packet, id %d, i%d/%d\n", response.packet_id, huge_buffer_counter, length);
+                            send_retval = send(socket, &packet_array, PACKET_MAX_BYTES, 0);
+                            if (send_retval == -1)
+                                printf("BRUH\n");
+
+                            usleep(TIME_BETWEEN_TRIES);
+                            
+                            // get acknowledgement
+                            // receive response FROM CLIENT
+                            bool got_something = false;
+                            int local_counter = 0;
+
+                            while (not got_something)
+                            {
+                                // printf("receiving ACK?\n");
+                                recv_retval = recv(socket,&packet_array, PACKET_MAX_BYTES, 0);
+                                // printf("recv retval = %d\n\n", recv_retval);
+
+                                if (recv_retval != -1)
+                                {
+                                    get_packet_from_array(packet_array, &request);
+                                    printf("GOT PACKAGE.\n");
+                                }
+                                // check request
+                                if ((recv_retval != -1) and valid_packet(&request, (msg_counter /*+1*/) % 16)
+                                    and request.origin_address == CLIENT)
+                                {
+                                    // REAL PACKAGE!!!!
+
+                                    if (request.type == NACK)
+                                    {
+                                        printf("GOT NACK\n");
+                                        sent_succexy = false;
+                                        got_something = true;
+                                    }
+                                    else if (request.type == ACK)
+                                    {
+                                        printf("GOT ACK\n");
+                                        sent_succexy = true;
+                                        got_something = true;
+                                    }
+
+                                    got_something = true;
+                                }
+                                else
+                                {
+
+                                    if (recv_retval == -1)
+                                        true;
+
+                                    else
+                                    {
+                                        local_counter++;
+                                        if (request.origin_address == CLIENT)
+                                            print_packet(&request);
+                                        else
+                                            printf("b.");
+                                    }
+
+
+                                    if (local_counter > MAX_RECEIVE_TRIES)
+                                        got_something = true;
+                                }
+                            }
+                            // msg_counter = (msg_counter + 1) % 16; 
+                        }
+                    }
                 }
                 else
                 {

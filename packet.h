@@ -14,6 +14,7 @@
 // types
 #define CD 0b0000
 #define ACK 0b1000
+#define NACK 0b1001
 #define LCD 2
 #define LS 3
 #define LLS 4
@@ -23,6 +24,7 @@
 #define EDIT 8
 #define COMPILAR 9
 
+#define LS_CONTENT 0b1011
 #define ERROR 0b1111
 
 
@@ -46,5 +48,8 @@ int make_packet_array(char* array, packet_t* packet);
 int get_packet_from_array(char* array, packet_t* packet);
 
 unsigned char get_parity(packet_t* packet);
+
+void print_packet(packet_t* packet);
+
 
 #endif

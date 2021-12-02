@@ -23,6 +23,8 @@ bool get_realpath(char* path, char* buf);
 
 int cd(char* path, char* current_dir);
 
+int ls_to_string(char* path, char* destination);
+
 int ls(char* path);
 
 #endif

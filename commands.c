@@ -77,6 +77,31 @@ int ls(char* path)
     return 0;
 }
 
+int ls_to_string(char* path, char* destination)
+{
+    strcpy(destination, "");
+
+    DIR *mydir;
+    struct dirent *myfile;
+    struct stat mystat;
+
+    char buf[512];
+    mydir = opendir(path);
+    while((myfile = readdir(mydir)) != NULL)
+    {
+        sprintf(buf, "%s/%s", path, myfile->d_name);
+        stat(buf, &mystat);
+
+        if (strncmp(myfile->d_name, ".", 1)) // hidden file
+        {
+            sprintf(buf, "%s\n", myfile->d_name);
+            strncat(destination, buf, STR_MAX);
+        }
+    }
+    closedir(mydir);
+    return 0;
+}
+
 // int main()
 // {
 //     ls(".");
