@@ -1,6 +1,24 @@
 #include "network.h"
 #include "packet.h"
+#include "commands.h"
 
+char server_dir[STR_MAX];
+
+int parse_command_packet(packet_t* packet)
+{
+    if (packet->type == 0)
+    {
+        if (cd(packet->data, server_dir))
+        {
+            printf("Switched to %s", server_dir);
+        }
+        else
+        {
+            printf("BRUH\n");
+        }
+    }
+    return 0;
+}
 
 int main()
 {
@@ -10,6 +28,9 @@ int main()
     int socket = raw_socket_connection("lo");
     printf("Connected.\n");
     printf("Waiting for instructions from `client`.\n\n");
+
+
+    get_realpath(".", server_dir);
 
     int retval;
     while(1)
@@ -22,11 +43,11 @@ int main()
             get_packet_from_array(packet_array, &packet);
             if (not valid_packet(&packet))
             {
-                printf("h: %d != %d\n", packet.header, HEADER);
-                printf("packet->data_size: %d\n", packet.data_size);
-                printf("packet->packet_id: %d\n", packet.packet_id);
-                printf("packet->type %d\n", packet.type);
-                printf("packet->data: ") ;
+                // printf("h: %d != %d\n", packet.header, HEADER);
+                // printf("packet->data_size: %d\n", packet.data_size);
+                // printf("packet->packet_id: %d\n", packet.packet_id);
+                // printf("packet->type %d\n", packet.type);
+                // printf("packet->data: ") ;
                 for(int i = 0; i < packet.data_size; i++)
                 {       
                     printf("%c", packet.data[i]);
@@ -34,7 +55,9 @@ int main()
 
                 printf("p: %d != %d\n", packet.parity, get_parity(&packet));
             }
-            printf("%s\n", packet.data);
+            // printf("%s\n", packet.data);
+            parse_command_packet(&packet);
+
         }
         else
             printf("Nothing.");

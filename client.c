@@ -10,7 +10,7 @@ char client_dir[STR_MAX];
 char server_dir[STR_MAX];
 
 
-int get_command(char* command, int* type, char* data)
+int parse_str_command(char* command, int* type, char* data)
 {
     printf("client@%s : ", client_dir);
     char* fgets_retval = fgets(command, STR_MAX, stdin);
@@ -88,7 +88,7 @@ int main()
         ///////// GET COMMAND
         int type;
         char data[15];
-        command_id = get_command(command, &type, data);
+        command_id = parse_str_command(command, &type, data);
         
 
         if (command_id != NOP)
