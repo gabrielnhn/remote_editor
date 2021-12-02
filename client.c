@@ -10,7 +10,7 @@ char client_dir[STR_MAX];
 char server_dir[STR_MAX];
 
 
-int parse_str_command(char* command, int* type, char* data)
+int parse_str_command(char* command, int* type, char* data, int* data_size)
 {
     printf("client@%s : ", client_dir);
     char* fgets_retval = fgets(command, STR_MAX, stdin);
@@ -24,15 +24,16 @@ int parse_str_command(char* command, int* type, char* data)
     command[strcspn(command, "\n")] = 0; // remove '\n'
 
 
-    if (strncmp(command, "cd", strlen("cd")) == 0)
+    if (strncmp(command, "cd ", strlen("cd ")) == 0)
     {
         strcpy(data, command + 3);
+        *data_size = strlen(command + 3) + 1;
         *type = 0;
-        return CD;
+        return ONE_NIGHT_STAND;
     }
-    else if (strncmp(command, "lcd", strlen("lcd")) == 0)
+    else if (strncmp(command, "lcd ", strlen("lcd ")) == 0)
     {
-        if (cd(command + 4, client_dir))
+        if (cd(command + 4, client_dir) == SUCCEXY)
         {
             // printf("updated\n");
             true;
@@ -86,10 +87,13 @@ int main()
 
     // strcpy(client_dir, ".") ;
 
+    char huge_buffer[A_LOT];
+
 
     char command[STR_MAX];
     int send_retval, recv_retval;
-    int command_id;
+    int command_type;
+    int data_size;
     bool sent_succexy;
 
     int msg_counter = 0;
@@ -99,45 +103,66 @@ int main()
         ///////// GET COMMAND
         int type;
         char data[15];
-        command_id = parse_str_command(command, &type, data);
+        command_type = parse_str_command(command, &type, data, &data_size);
         
 
-        if (command_id != NOP)
+        if (command_type != NOP)
         {
-            sent_succexy = false;
-            while (not sent_succexy)
+            if (command_type == ONE_NIGHT_STAND)
             {
-                memset(request.data, 0, DATA_BYTES);
-                bit_copy(data, 0, request.data, 0, (strlen(data) + 1)*8);
-                request.data_size = strlen(data) + 1;
+                int counter = 0;
 
-                request.type = type;
-                request.packet_id = msg_counter;
-
-                make_packet_array(packet_array, &request);
-                
-                send_retval = send(socket, &packet_array, PACKET_MAX_BYTES, 0);
-                
-                if (send_retval == -1)
-                    printf("Error: nothing was sent.\n");
-
-                recv_retval = recv(socket, &packet_array, PACKET_MAX_BYTES, 0);
-                if (recv_retval == -1)
-                    printf("BRUH\n");
-
-                get_packet_from_array(packet_array, &response);
-                if (valid_packet(&response, (msg_counter + 2) % 16) && response.origin_address == SERVER)
-                    printf("Got something\n");
-                else
-                    printf("Got nothing.\n");
-
-                if (response.type == ACK)
+                sent_succexy = false;
+                while (not sent_succexy)
                 {
-                    printf("cd retval = %d.\n", *response.data);
-                    sent_succexy = true;
+                    // set request packet
+                    memset(request.data, 0, DATA_BYTES);
+                    memcpy(request.data, data, data_size);
+                    request.data_size = data_size;
+                    request.type = type;
+                    request.packet_id = msg_counter;
+                    make_packet_array(packet_array, &request);
+                    
+                    // send request
+                    send_retval = send(socket, &packet_array, PACKET_MAX_BYTES, 0);
+                    if (send_retval == -1)
+                        printf("Error: nothing was sent.\n");
+
+                    // receive response
+                    recv_retval = recv(socket, &packet_array, PACKET_MAX_BYTES, 0);
+                    if (recv_retval == -1)
+                        printf("BRUH\n");
+
+                    // check response
+                    get_packet_from_array(packet_array, &response);
+                    if (valid_packet(&response, (msg_counter + 1) % 16) && response.origin_address == SERVER)
+                    {
+                        printf("Got something\n");
+                        if (response.type == ACK)
+                        {
+                            printf("cd retval = %d.\n", *response.data);
+                            sent_succexy = true;
+                        }
+                    }
+                    else
+                    {
+                        printf("No response?\n");
+                        printf("valid? == %d\n", valid_packet(&response, (msg_counter + 1) % 16));
+                        printf("origin == %d\n", response.origin_address == SERVER);
+                        printf("id is %d, expected %d\n", response.packet_id, (msg_counter + 1) % 16);
+                        printf("type == ACK = %d\n", response.type == ACK);
+
+                        counter++;
+                        if (counter > 15)
+                            sent_succexy = true;
+                    }
                 }
+                msg_counter += 2;
             }
-            msg_counter += 2;
+            else if (command_type == STREAM)
+            {
+                memset(huge_buffer, 0, A_LOT); // clean buffer
+            }
         }
     }
 }

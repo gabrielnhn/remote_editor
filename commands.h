@@ -4,6 +4,7 @@
 #include <stdbool.h>
 
 #define STR_MAX 100
+#define A_LOT 100000
 
 // RETURN VALUES
 #define SUCCEXY 0
@@ -15,6 +16,9 @@
 
 // no operation / local operation
 #define NOP -1
+#define ONE_NIGHT_STAND 1
+#define STREAM 2
+
 
 #define CD 0
 #define LCD 2

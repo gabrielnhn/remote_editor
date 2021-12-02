@@ -10,6 +10,7 @@ int parse_command_packet(packet_t* packet, int* type, char* data, int* data_size
 {
     if (packet->type == CD)
     {
+        printf("cd to %s\n", packet->data);
         int retval = cd(packet->data, server_dir);
         if (retval == SUCCEXY)
         {
@@ -33,9 +34,9 @@ int main()
     packet_t request, response;
     char packet_array[PACKET_MAX_BYTES];
 
-    request.header = HEADER;
-    request.dest_address = CLIENT;
-    request.origin_address = SERVER;
+    response.header = HEADER;
+    response.dest_address = CLIENT;
+    response.origin_address = SERVER;
 
 
     int socket = raw_socket_connection("lo");
@@ -64,6 +65,7 @@ int main()
 
         if (recv_retval != -1)
         {
+            // get request
             get_packet_from_array(packet_array, &request);
 
             if (msg_counter == -1)
@@ -75,20 +77,26 @@ int main()
 
             if (valid_packet(&request, msg_counter))
             {
+                // execute command
                 parse_command_packet(&request, &type, data, &data_size);
+
+                // set response packet
 
                 memset(response.data, 0, DATA_BYTES);
                 // bit_copy(data, 0, response.data, 0, (strlen(data) + 1)*8);
-                memcpy(data, response.data, data_size);
+                memcpy(response.data, data, data_size);
                 response.data_size = data_size;
-
                 response.type = type;
+                printf("Sending retval = %d\n", *response.data);
 
                 msg_counter = (msg_counter + 1) % 16;
-
                 response.packet_id = msg_counter;
+                printf("response id %d\n", response.packet_id);
+
                 make_packet_array(packet_array, &response);
 
+
+                // send response
                 send_retval = send(socket, &packet_array, PACKET_MAX_BYTES, 0);
                 if (send_retval == -1)
                     printf("BRUH\n");
@@ -96,8 +104,21 @@ int main()
                 msg_counter = (msg_counter + 1) % 16;
             }
             else
-                // printf("p: %d != %d\n", request.parity, get_parity(&request));
-                true;
+            {
+                int a = msg_counter - 2;
+                if (a < 0)
+                    a = 16 - a;
+    
+                if (valid_packet(&request, a))
+                {
+                    printf("resending message %d\n", a);
+                    // resend response
+                    make_packet_array(packet_array, &response);
+                    send_retval = send(socket, &packet_array, PACKET_MAX_BYTES, 0);
+                    if (send_retval == -1)
+                        printf("BRUH\n");
+                }
+            }
         }
         else
             printf("Sent Nothing.");
