@@ -6,7 +6,7 @@
 
 char server_dir[STR_MAX];
 
-int parse_command_packet(packet_t* packet, int* type, char* data)
+int parse_command_packet(packet_t* packet, int* type, char* data, int* data_size)
 {
     if (packet->type == CD)
     {
@@ -23,6 +23,7 @@ int parse_command_packet(packet_t* packet, int* type, char* data)
         *type = ACK;
         memset(data, 0, DATA_BYTES);
         memcpy(data, &retval, sizeof(char));
+        *data_size = sizeof(char);
     }
     return 0;
 }
@@ -54,47 +55,52 @@ int main()
     int recv_retval, send_retval;
     char data[DATA_BYTES];
     int type;
+    int data_size;
+    int msg_counter = -1;
+
     while(1)
     {
         recv_retval = recv(socket, &packet_array, PACKET_MAX_BYTES, 0);
 
-        if ((recv_retval != -1) or (errno != 0))
+        if (recv_retval != -1)
         {
-            // print_bits(PACKET_MAX_BYTES, packet_array);
             get_packet_from_array(packet_array, &request);
-            if (not valid_packet(&request))
+
+            if (msg_counter == -1)
             {
-                // printf("h: %d != %d\n", packet.header, HEADER);
-                // printf("packet->data_size: %d\n", packet.data_size);
-                // printf("packet->packet_id: %d\n", packet.packet_id);
-                // printf("packet->type %d\n", packet.type);
-                // printf("packet->data: ") ;
-                // for(int i = 0; i < packet.data_size; i++)
-                // {       
-                //     printf("%c", packet.data[i]);
-                // }
-
-                printf("p: %d != %d\n", request.parity, get_parity(&request));
+                // start counter
+                msg_counter = request.packet_id;
+                printf("Packet counter started as %d\n", msg_counter);
             }
-            // printf("got a packet\n");
-            // printf("%s\n", packet.data);
-            parse_command_packet(&request, &type, data);
 
-            memset(response.data, 0, DATA_BYTES);
-            bit_copy(data, 0, response.data, 0, (strlen(data) + 1)*8);
-            response.data_size = strlen(data) + 1;
+            if (valid_packet(&request, msg_counter))
+            {
+                parse_command_packet(&request, &type, data, &data_size);
 
-            response.type = type;
-            response.packet_id = 0;
-            make_packet_array(packet_array, &response);
+                memset(response.data, 0, DATA_BYTES);
+                // bit_copy(data, 0, response.data, 0, (strlen(data) + 1)*8);
+                memcpy(data, response.data, data_size);
+                response.data_size = data_size;
 
-            send_retval = send(socket, &packet_array, PACKET_MAX_BYTES, 0);
-            if (send_retval == -1)
-                printf("BRUH\n");
+                response.type = type;
 
+                msg_counter = (msg_counter + 1) % 16;
+
+                response.packet_id = msg_counter;
+                make_packet_array(packet_array, &response);
+
+                send_retval = send(socket, &packet_array, PACKET_MAX_BYTES, 0);
+                if (send_retval == -1)
+                    printf("BRUH\n");
+
+                msg_counter = (msg_counter + 1) % 16;
+            }
+            else
+                // printf("p: %d != %d\n", request.parity, get_parity(&request));
+                true;
         }
         else
-            printf("Nothing.");
+            printf("Sent Nothing.");
         // printf("%d\n", errno);
     }   
 }

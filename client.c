@@ -91,6 +91,9 @@ int main()
     int send_retval, recv_retval;
     int command_id;
     bool sent_succexy;
+
+    int msg_counter = 0;
+
     while(1)
     {
         ///////// GET COMMAND
@@ -109,7 +112,8 @@ int main()
                 request.data_size = strlen(data) + 1;
 
                 request.type = type;
-                request.packet_id = 0;
+                request.packet_id = msg_counter;
+
                 make_packet_array(packet_array, &request);
                 
                 send_retval = send(socket, &packet_array, PACKET_MAX_BYTES, 0);
@@ -122,7 +126,7 @@ int main()
                     printf("BRUH\n");
 
                 get_packet_from_array(packet_array, &response);
-                if (valid_packet(&response) && response.origin_address == SERVER)
+                if (valid_packet(&response, (msg_counter + 2) % 16) && response.origin_address == SERVER)
                     printf("Got something\n");
                 else
                     printf("Got nothing.\n");
@@ -133,6 +137,7 @@ int main()
                     sent_succexy = true;
                 }
             }
+            msg_counter += 2;
         }
     }
 }

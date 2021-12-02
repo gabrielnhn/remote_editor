@@ -1,12 +1,15 @@
 #include "network.h"
 #include "packet.h"
 
-bool valid_packet(packet_t* packet)
+bool valid_packet(packet_t* packet, int id)
 {
     if (packet->header != HEADER)
         return false;
 
     if (get_parity(packet) != packet->parity)
+        return false;
+
+    if (packet->packet_id != id)
         return false;
 
     return true;

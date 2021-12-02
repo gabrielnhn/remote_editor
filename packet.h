@@ -24,7 +24,7 @@ typedef struct{
     unsigned char parity; 
 } packet_t;
 
-bool valid_packet(packet_t* packet);
+bool valid_packet(packet_t* packet, int id);
 
 int make_packet_array(char* array, packet_t* packet);
 
