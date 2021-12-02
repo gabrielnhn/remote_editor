@@ -10,7 +10,7 @@ char client_dir[STR_MAX];
 char server_dir[STR_MAX];
 
 
-int get_command(char* command)
+int get_command(char* command, int* type, char* data)
 {
     printf("client@%s : ", client_dir);
     char* fgets_retval = fgets(command, STR_MAX, stdin);
@@ -26,6 +26,8 @@ int get_command(char* command)
 
     if (strncmp(command, "cd", strlen("cd")) == 0)
     {
+        strcpy(data, command + 3);
+        *type = 0;
         return CD;
     }
     else if (strncmp(command, "lcd", strlen("lcd")) == 0)
@@ -84,7 +86,9 @@ int main()
     while(1)
     {
         ///////// GET COMMAND
-        command_id = get_command(command);
+        int type;
+        char data[15];
+        command_id = get_command(command, &type, data);
         
 
         if (command_id != NOP)
@@ -93,16 +97,16 @@ int main()
             while (not sent_succexy)
             {
                 memset(packet.data, 0, DATA_BYTES);
-                bit_copy(command, 0, packet.data, 0, (strlen(command) + 1)*8);
-                // memcpy(packet.data, command, strlen(command) + 1);
-                packet.data_size = strlen(command) + 1;
-                // packet.data_size = DATA_BYTES;
+                bit_copy(data, 0, packet.data, 0, (strlen(data) + 1)*8);
+                packet.data_size = strlen(data) + 1;
 
-                packet.type = 0;
+                packet.type = type;
                 packet.packet_id = 0;
                 make_packet_array(packet_array, &packet);
                 
                 send_retval = send(socket, &packet_array, PACKET_MAX_BYTES, 0);
+                
+                
                 if (send_retval == -1)
                     printf("Error: nothing was sent.");
                 else
