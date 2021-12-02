@@ -16,13 +16,13 @@ int parse_command_packet(packet_t* packet, int* type, char* data, int* data_size
         if (retval == SUCCEXY)
         {
             printf("Switched to %s\n", server_dir);
+            *type = ACK;
         }
         else
         {
             printf("cd failed\n");
+            *type = ERROR;
         }
-
-        *type = ACK;
         memset(data, 0, DATA_BYTES);
         memcpy(data, &retval, sizeof(char));
         *data_size = sizeof(char);

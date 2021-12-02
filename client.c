@@ -106,7 +106,7 @@ int main()
         int type;
         char data[15];
         command_type = parse_str_command(command, &type, data, &data_size);
-        
+        int command_retval;
 
         if (command_type != NOP)
         {
@@ -115,7 +115,7 @@ int main()
                 int counter = 0;
 
                 sent_succexy = false;
-                while (not sent_succexy)
+                while (not sent_succexy and counter < MAX_SEND_TRIES)
                 {
                     // set request packet
                     memset(request.data, 0, DATA_BYTES);
@@ -139,7 +139,7 @@ int main()
 
                     while (not got_something)
                     {
-                        printf("try recv\n");
+                        // printf("try recv\n");
                         recv_retval = recv(socket,&packet_array, PACKET_MAX_BYTES, 0);
 
                         if (recv_retval != -1)
@@ -150,9 +150,9 @@ int main()
                             and response.origin_address == SERVER)
                         {
                             // printf("Got something\n");
-                            if (response.type == ACK)
+                            if (response.type == ACK or response.type == ERROR)
                             {
-                                printf("cd retval = %d.\n", *response.data);
+                                command_retval = *response.data;
                                 got_something = true;
                                 sent_succexy = true;
                             }
@@ -164,8 +164,17 @@ int main()
                                 got_something = true;
                         }
                     }
+                    counter++;
                 }
-                msg_counter += 2;
+                if (sent_succexy)
+                {
+                    msg_counter += 2;
+                    printf("retval: %d\n", command_retval);
+                }
+                else
+                {
+                    printf("Command was not received by server.\n");
+                }
             }
             else if (command_type == STREAM)
             {

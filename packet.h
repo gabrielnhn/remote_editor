@@ -11,7 +11,22 @@
 #define CLIENT 0b01
 
 
+// types
+#define CD 0b0000
 #define ACK 0b1000
+#define LCD 2
+#define LS 3
+#define LLS 4
+#define VER 5
+#define LINHA 6
+#define LINHAS 7
+#define EDIT 8
+#define COMPILAR 9
+
+#define ERROR 0b1111
+
+
+
 
 typedef struct{
     unsigned char header;
