@@ -244,8 +244,15 @@ int main()
                             // printf("try recv\n");
                             recv_retval = recv(socket,&packet_array, PACKET_MAX_BYTES, 0);
 
-                            if (recv_retval != -1)
+                            if (recv_retval != -1){
+                                // printf("got something bruh, ");
                                 get_packet_from_array(packet_array, &response);
+                                if (response.origin_address == SERVER)
+                                    printf("and it's from the server\n");
+                                else
+                                    printf("and it's from myself LUL\n");
+
+                            }
 
                             // check response
                             if ((recv_retval != -1) and valid_packet(&response, (msg_counter + 1) % 16)
@@ -272,12 +279,15 @@ int main()
                             // timeout
                             else
                             {
-                                // printf("valid: %d\n", valid_packet(&response, (msg_counter + 1) % 16));
-                                // printf("expected %d got %d\n", (msg_counter + 1) % 16, response.packet_id);
-                                if (response.origin_address == SERVER)
-                                    print_packet(&response);
-                                else
-                                    printf("b.");
+                                if (recv_retval != -1)
+                                {
+                                    if (response.origin_address == SERVER){
+                                        print_packet(&response);
+                                        printf("wanted %d", (msg_counter + 1));
+                                    }
+                                    // else
+                                    //     printf("b.");
+                                }
                                 local_counter++;
                                 if (local_counter > MAX_RECEIVE_TRIES)
                                     got_something = true;

@@ -51,19 +51,12 @@ int main()
     response.dest_address = CLIENT;
     response.origin_address = SERVER;
 
-
     int socket = raw_socket_connection("lo");
-    // LINUX
-    // struct timeval tv;
-    // tv.tv_sec = 0.5;
-    // tv.tv_usec = 0;
-    // setsockopt(socket, SOL_SOCKET, SO_RCVTIMEO, (const char*)&tv, sizeof tv);
-
 
     printf("Connected.\n");
     get_realpath(".", server_dir);
     printf("Current directory is %s\n", server_dir);
-    printf("Waiting for instructions from `client`.\n\n");
+    // printf("Waiting for instructions from `client`.\n\n");
 
 
     int recv_retval, send_retval;
@@ -140,6 +133,8 @@ int main()
                         huge_buffer_counter = 0;
                         int length = strlen(huge_buffer) + 1;
                         msg_counter = (msg_counter + 1);
+                        response.packet_id = msg_counter;
+                        msg_counter = (msg_counter + 1);
 
                         while(huge_buffer_counter < length)
                         {
@@ -158,11 +153,13 @@ int main()
                                 // printf("response id %d\n", response.packet_id);
 
                                 make_packet_array(packet_array, &response);
-                                msg_counter = (msg_counter + 1) % 16;
+                                msg_counter = (msg_counter + 2) % 16;
                             }
+
                             // send response
                             printf("Sending packet, id %d, i%d/%d\n", response.packet_id, huge_buffer_counter, length);
                             send_retval = send(socket, &packet_array, PACKET_MAX_BYTES, 0);
+                            printf("%d, BRO WHAT\n", send_retval);
                             if (send_retval == -1)
                                 printf("BRUH\n");
 
@@ -182,10 +179,9 @@ int main()
                                 if (recv_retval != -1)
                                 {
                                     get_packet_from_array(packet_array, &request);
-                                    printf("GOT PACKAGE.\n");
                                 }
                                 // check request
-                                if ((recv_retval != -1) and valid_packet(&request, (msg_counter /*+1*/) % 16)
+                                if ((recv_retval != -1) and (valid_packet(&request, (msg_counter /*+1*/) % 16) or valid_packet(&request, (msg_counter -2) % 16))
                                     and request.origin_address == CLIENT)
                                 {
                                     // REAL PACKAGE!!!!
@@ -203,6 +199,14 @@ int main()
                                         got_something = true;
                                     }
 
+                                    else if (request.type == LS)
+                                    {
+                                        printf("GOT LS (AGAIN)\n");
+                                        sent_succexy = false;
+                                        got_something = true;
+                                        huge_buffer_counter = 0;
+                                    }
+
                                     got_something = true;
                                 }
                                 else
@@ -215,7 +219,10 @@ int main()
                                     {
                                         local_counter++;
                                         if (request.origin_address == CLIENT)
+                                        {
                                             print_packet(&request);
+                                            printf("wanted id %d\n", msg_counter);
+                                        }
                                         else
                                             printf("b.");
                                     }
