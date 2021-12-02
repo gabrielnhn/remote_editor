@@ -248,9 +248,9 @@ int main()
                                 // printf("got something bruh, ");
                                 get_packet_from_array(packet_array, &response);
                                 if (response.origin_address == SERVER)
-                                    printf("and it's from the server\n");
+                                    printf("        from the server\n");
                                 else
-                                    printf("and it's from myself LUL\n");
+                                    printf("        from myself LUL\n");
 
                             }
 
@@ -272,8 +272,11 @@ int main()
                                     got_something = true;
                                     got_succexy = true;
                                 }
-                                else
-                                    printf("Still nothing\n");
+                                else{
+                                    printf("Still nothing. type == %d\n", response.type);
+                                    print_packet(&response);
+                                    printf("\n");
+                                }
                                 got_something = true;
                             }
                             // timeout

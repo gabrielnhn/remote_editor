@@ -37,6 +37,7 @@ int parse_command_packet(packet_t* packet, int* type, char* data, int* data_size
     {
         printf("GOT LS\n");
         ls_to_string(server_dir, huge_buffer);
+        *type = LS_CONTENT;
         return STREAM;
     }
     return NOP;
@@ -135,6 +136,8 @@ int main()
                         msg_counter = (msg_counter + 1);
                         response.packet_id = msg_counter;
                         msg_counter = (msg_counter + 1);
+                        response.type = type;
+                        make_packet_array(packet_array, &response);
 
                         while(huge_buffer_counter < length)
                         {
@@ -159,9 +162,10 @@ int main()
                             // send response
                             printf("Sending packet, id %d, i%d/%d\n", response.packet_id, huge_buffer_counter, length);
                             send_retval = send(socket, &packet_array, PACKET_MAX_BYTES, 0);
-                            printf("%d, BRO WHAT\n", send_retval);
-                            if (send_retval == -1)
-                                printf("BRUH\n");
+
+                            // printf("%d, BRO WHAT\n", send_retval);
+                            // if (send_retval == -1)
+                            //     printf("BRUH\n");
 
                             usleep(TIME_BETWEEN_TRIES);
                             
