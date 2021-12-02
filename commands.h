@@ -5,9 +5,16 @@
 
 #define STR_MAX 100
 
+// RETURN VALUES
+#define SUCCEXY 0
+#define FORBIDDEN 1
+#define DIR_DOES_NOT_EXIST 2
+#define FILE_DOES_NOT_EXIST 3
+#define LINE_DOES_NOT_EXIST 4
+
+
 // no operation / local operation
 #define NOP -1
-
 
 #define CD 0
 #define LCD 2
@@ -21,7 +28,7 @@
 
 bool get_realpath(char* path, char* buf);
 
-bool cd(char* path, char* current_dir);
+int cd(char* path, char* current_dir);
 
 int ls(char* path);
 

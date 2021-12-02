@@ -129,7 +129,7 @@ int main()
 
                 if (response.type == ACK)
                 {
-                    printf("cd successfull.\n");
+                    printf("cd retval = %d.\n", *response.data);
                     sent_succexy = true;
                 }
             }

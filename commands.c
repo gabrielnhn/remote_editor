@@ -11,6 +11,7 @@
 #include <stdio.h>
 #include <limits.h>
 #include <iso646.h>
+#include <errno.h>
 
 int get_cwd(char* buf) {
 
@@ -35,18 +36,22 @@ bool get_realpath(char* path, char* buf)
     return 0;
 }
 
-bool cd(char* path, char* current_dir)
+int cd(char* path, char* current_dir)
 {
-    bool retval;
+    int retval;
 
     DIR *mydir;
     mydir = opendir(path);
 
     if ((mydir != NULL) and get_realpath(path, current_dir) and (chdir(current_dir) == 0))
-        retval = true;
+        retval = SUCCEXY;
     else 
-        retval = false;
-
+    {
+        if (errno == EACCES)
+            retval = FORBIDDEN;
+        else if ((errno == ENOTDIR) or (errno == ENOENT))
+            retval = DIR_DOES_NOT_EXIST;
+    }
     closedir(mydir);
 
     return retval;

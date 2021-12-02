@@ -8,18 +8,21 @@ char server_dir[STR_MAX];
 
 int parse_command_packet(packet_t* packet, int* type, char* data)
 {
-    if (packet->type == 0)
+    if (packet->type == CD)
     {
-        if (cd(packet->data, server_dir))
+        int retval = cd(packet->data, server_dir);
+        if (retval == SUCCEXY)
         {
             printf("Switched to %s\n", server_dir);
-            *type = ACK;
-            strcpy(data, "");
         }
         else
         {
             printf("cd failed\n");
         }
+
+        *type = ACK;
+        memset(data, 0, DATA_BYTES);
+        memcpy(data, &retval, sizeof(char));
     }
     return 0;
 }
@@ -49,7 +52,7 @@ int main()
 
 
     int recv_retval, send_retval;
-    char data[STR_MAX];
+    char data[DATA_BYTES];
     int type;
     while(1)
     {
