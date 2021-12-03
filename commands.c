@@ -111,7 +111,7 @@ int indexed_cat(const char* path, char* destination)
     int retval = SUCCEXY;
 
     // abre o arquivo em leitura
-    f = fopen ("dados.txt", "r") ;
+    f = fopen (path, "r") ;
     if (f == NULL)
     {
         if (errno == EACCES)
@@ -121,7 +121,7 @@ int indexed_cat(const char* path, char* destination)
     }
     if (retval != SUCCEXY)
     {
-        printf("%s reading failed\n", path);
+        printf("'%s' reading failed\n", path);
         return retval;
     }
 
