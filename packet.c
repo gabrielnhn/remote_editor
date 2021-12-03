@@ -2,6 +2,7 @@
 #include "packet.h"
 
 bool valid_packet(packet_t* packet, int id)
+// if id == -1, won't check for parity.
 {
     if (packet->header != HEADER){
         // printf("header........\n");
@@ -12,9 +13,12 @@ bool valid_packet(packet_t* packet, int id)
         // printf("parity........\n");
         return false;
     }
-    if (packet->packet_id != id){
-        // printf("id........\n");
-        return false;
+
+    if (id != -1){
+        if (packet->packet_id != id){
+            // printf("id........\n");
+            return false;
+        }
     }
 
     return true;

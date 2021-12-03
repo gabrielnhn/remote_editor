@@ -127,8 +127,9 @@ int main()
             if (from_client and (not duplicate))
             // do not ignore this command.
             {
-                if (valid_packet(&request, msg_counter))
+                if (valid_packet(&request, -1))
                 {
+                    msg_counter = (request.packet_id) % 16;
                     // execute command
                     int command_id = parse_command_packet(&request, &type, data, &data_size);
 
