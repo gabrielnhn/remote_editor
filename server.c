@@ -42,8 +42,27 @@ int parse_command_packet(packet_t* packet, int* type, char* data, int* data_size
         }
         return LS;
     }
+
+    if (packet->type == VER)
+    {
+        printf("ver received\n");
+        
+        char path[STR_MAX];
+        strcpy(path, packet->data);
+
+        if (indexed_cat(path, huge_buffer) != SUCCEXY){
+            printf("VER ERROR\n");
+            return ERROR;
+        }
+        printf("%s", huge_buffer);
+        return VER;
+    }
+    
+
     return NOP;
 }
+
+
 
 int main()
 {

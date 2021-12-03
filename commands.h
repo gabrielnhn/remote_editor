@@ -27,4 +27,6 @@ int ls_to_string(const char* path, char* destination);
 
 int ls(char* path);
 
+int indexed_cat(const char* path, char* destination);
+
 #endif

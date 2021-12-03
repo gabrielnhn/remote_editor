@@ -104,6 +104,49 @@ int ls_to_string(const char* path, char* destination)
     return 0;
 }
 
+int indexed_cat(const char* path, char* destination)
+{
+    FILE *f;
+    int i;
+    int retval = SUCCEXY;
+
+    // abre o arquivo em leitura
+    f = fopen ("dados.txt", "r") ;
+    if (f == NULL)
+    {
+        if (errno == EACCES)
+            retval =  FILE_DOES_NOT_EXIST;
+        else
+            retval =  FORBIDDEN;
+    }
+    if (retval != SUCCEXY)
+    {
+        fclose(f);
+        return retval;
+    }
+
+    char buffer[STR_MAX + 10];
+    char line[STR_MAX];
+    strcpy(destination, "");
+
+
+    // lê TODAS as linhas do arquivo
+    i = 1 ;
+    fgets (line, STR_MAX, f);
+    while (not feof (f))
+    {
+        sprintf(buffer, "%d: %s", i, line);
+        strcat(destination, buffer);
+        fgets (line, STR_MAX, f) ;   // tenta ler a próxima linha
+        i++ ;
+    }
+
+    // fecha o arquivo
+    fclose (f) ;
+
+    return retval;
+}
+
 // int main()
 // {
 //     ls(".");
