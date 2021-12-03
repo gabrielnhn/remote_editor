@@ -5,7 +5,7 @@
 #include <unistd.h>
 
 char server_dir[STR_MAX];
-char huge_buffer[STR_MAX];
+char huge_buffer[A_LOT];
 int huge_buffer_counter = 0;
 
 
@@ -35,8 +35,11 @@ int parse_command_packet(packet_t* packet, int* type, char* data, int* data_size
     if (packet->type == LS)
     {
         printf("ls received\n");
-        ls_to_string(server_dir, huge_buffer);
-        *type = LS_CONTENT;
+
+        if (ls_to_string(server_dir, huge_buffer) != SUCCEXY){
+            printf("LS ERROR\n");
+            return ERROR;
+        }
         return LS;
     }
     return NOP;
@@ -54,11 +57,11 @@ int main()
     int socket = raw_socket_connection("lo");
 
     printf("Connected.\n");
+    char data[DATA_BYTES];
     get_realpath(".", server_dir);
     printf("Current directory is %s\n", server_dir);
 
     int recv_retval, send_retval;
-    char data[DATA_BYTES];
     int type;
     int data_size;
     int msg_counter = -1;
@@ -72,11 +75,12 @@ int main()
         if (recv_retval != -1)
         {
             get_packet_from_array(packet_array, &request);
-
             // Check for duplicate
+            printf("evaluated %d, considering %d\n", request.packet_id, msg_counter);
+
             int previous_id = msg_counter - 2;
             if (previous_id < 0)
-                previous_id = 16 - previous_id;
+                previous_id = 16 + previous_id;
 
             if (request.packet_id == previous_id)
                 duplicate = not duplicate;
@@ -131,7 +135,8 @@ int main()
                     else if (command_id == LS)
                     {
                         huge_buffer_counter = 0;
-                        int length = strlen(huge_buffer) + 1;
+                        int length = strlen(huge_buffer);
+                        msg_counter = (msg_counter + 1) % 16;
 
                         bool sent_succexy = true;
                         printf("Starting transmission:");
@@ -139,16 +144,17 @@ int main()
                         {
                             if (sent_succexy)
                             {
+                                memset(response.data, 0, DATA_BYTES);
+
                                 strncpy(response.data, huge_buffer + huge_buffer_counter, 14);
                                 // printf("sending response.data: '%s'\n", response.data);
-                                huge_buffer_counter += 14;
 
-                                response.data_size = 14;
+                                huge_buffer_counter += strlen(response.data);
+                                // printf("counter: %d < %d\n", huge_buffer_counter, length);
+
+                                response.data_size = strlen(response.data) + 1;
                                 response.type = LS_CONTENT;
-
-                                msg_counter = (msg_counter + 1) % 16;
                                 response.packet_id = msg_counter;
-                                msg_counter = (msg_counter + 1) % 16;
 
                                 make_packet_array(packet_array, &response);
                                 sent_succexy = false;
@@ -178,9 +184,10 @@ int main()
                                     get_packet_from_array(packet_array, &request);
                                 }
                                 // check request
-                                if ((recv_retval != -1) and (valid_packet(&request, (msg_counter) % 16))
+                                if ((recv_retval != -1) and (valid_packet(&request, (msg_counter + 1) % 16))
                                     and request.origin_address == CLIENT)
                                 {
+                                    // printf("Got %d\n", request.packet_id);
                                     // REAL PACKAGE!!!!
 
                                     if (request.type == NACK)
@@ -209,29 +216,75 @@ int main()
                                 else
                                 {
                                     local_counter++;
-                                    if (request.origin_address == CLIENT)
-                                    {
+                                    // if (request.origin_address == CLIENT)
+                                    // {
                                         // printf("%d\n", valid_packet(&request, ));
-                                        // printf("Didnt want %d. wanted %d\n", request.packet_id, (msg_counter));
+                                        // printf("Didnt want %d. wanted %d\n", request.packet_id, (msg_counter + 1) % 16);
                                         // print_packet(&request);
                                         // printf("\n");
+                                    // }
+
+                                    if (local_counter > MAX_RECEIVE_TRIES)
+                                        got_something = true;
+                                }
+                                if (sent_succexy)
+                                    msg_counter = (msg_counter + 2) % 16;
+
+                            }
+                        }
+
+                        // SEND END OF TRANSMISSION
+                        printf("END\n");
+                        // msg_counter = (msg_counter + 1) % 16;
+                        sent_succexy = false;
+                        while (not sent_succexy)
+                        {
+                            response.type = END;
+                            response.packet_id = msg_counter;
+                            response.data_size = 0;
+                            make_packet_array(packet_array, &response);
+                            send_retval = send(socket, &packet_array, PACKET_MAX_BYTES, 0);
+
+                            bool got_something = false;
+                            int local_counter = 0;
+
+                            while (not got_something)
+                            {
+                                recv_retval = recv(socket,&packet_array, PACKET_MAX_BYTES, 0);
+                                if (recv_retval != -1)
+                                {
+                                    get_packet_from_array(packet_array, &request);
+                                }
+
+                                // check for last ACK
+                                if ((recv_retval != -1) and (valid_packet(&request, (msg_counter + 1) % 16))
+                                    and request.origin_address == CLIENT)
+                                {
+                                    // REAL PACKAGE!!!!
+
+                                    if (request.type == NACK)
+                                    {
+                                        got_something = true;
+                                    }
+                                    else if (request.type == ACK)
+                                    {
+                                        sent_succexy = true;
+                                        got_something = true;
                                     }
 
+                                    got_something = true;
+                                }
+                                else
+                                {
+                                    local_counter++;
                                     if (local_counter > MAX_RECEIVE_TRIES)
                                         got_something = true;
                                 }
                             }
                         }
-
-                        // SEND END OF TRANSMISSION
-                        response.type = END;
-                        msg_counter = (msg_counter + 1) % 16;
-                        response.packet_id = msg_counter;
-                        msg_counter = (msg_counter + 1) % 16;
-                        response.data_size = 0;
-                        make_packet_array(packet_array, &response);
-                        send_retval = send(socket, &packet_array, PACKET_MAX_BYTES, 0);
-                        printf(" Done.\n");
+                        msg_counter = (msg_counter + 2) % 16;
+                        printf("Done.\n");
+                        printf("msg c %d\n", msg_counter);
                     }
                 }
                 else // asking for previous message?
@@ -251,7 +304,7 @@ int main()
             } 
             else // message was ignored.
             {
-                // printf("ignored.");
+                printf("ignored %d.\n", request.packet_id);
                 // if (duplicate)
                 //     printf("duplicate\n");
                 // else

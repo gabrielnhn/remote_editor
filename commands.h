@@ -19,11 +19,11 @@
 #define ONE_NIGHT_STAND 1
 #define STREAM 2
 
-bool get_realpath(char* path, char* buf);
+bool get_realpath(const char* path, char* buf);
 
 int cd(char* path, char* current_dir);
 
-int ls_to_string(char* path, char* destination);
+int ls_to_string(const char* path, char* destination);
 
 int ls(char* path);
 

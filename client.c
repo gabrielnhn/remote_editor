@@ -8,7 +8,6 @@
 #define STR_MAX 100
 
 char client_dir[STR_MAX];
-char server_dir[STR_MAX];
 char trash[STR_MAX];
 
 
@@ -126,7 +125,7 @@ int main()
                     make_packet_array(packet_array, &request);
                     
                     // send request
-                    printf("sending\n");
+                    // printf("sending\n");
                     send_retval = send(socket, &packet_array, PACKET_MAX_BYTES, 0);
                     if (send_retval == -1)
                         printf("Error: nothing was sent.\n");
@@ -202,11 +201,15 @@ int main()
                 bool request_validated = false;
 
                 bool LS_over = false;
-                while (not LS_over)
+                bool LS_to_be_over = false;
+                int counter = 0;
+                while (not LS_over and counter < MAX_SEND_TRIES)
                 {
-                    // for every not final packet 
-                    int counter = 0;
+                    if (LS_to_be_over)
+                        LS_over = true;
 
+                    counter = 0;
+                    // for every not final packet 
                     got_succexy = false;
                     while (not got_succexy and counter < MAX_SEND_TRIES)
                     {
@@ -258,10 +261,17 @@ int main()
                                 }
                                 else if (response.type == END)
                                 {
-                                    // printf("transmission ended\n");
+                                    printf("transmission ended\n");
                                     got_something = true;
                                     got_succexy = true;
-                                    LS_over = true;
+                                    LS_to_be_over = true;
+
+                                    // send last ACK
+                                    // request.type = ACK;
+                                    // request.data_size = 0;
+                                    // request.packet_id = msg_counter;
+                                    // make_packet_array(packet_array, &request);
+                                    // send_retval = send(socket, &packet_array, PACKET_MAX_BYTES, 0);
                                 }
                                 got_something = true;
                             }
@@ -296,12 +306,22 @@ int main()
                         }
                         if (got_something and got_succexy)
                         {
+                            // printf("msg %d tbo %d\n", msg_counter, LS_to_be_over);
                             msg_counter = (msg_counter + 2) % 16;
                             type = ACK;
                         }
                     }
                 }
-                printf("%s\n", huge_buffer);
+                if (LS_over){
+                    printf("%s\n", huge_buffer);
+                }
+                else
+                    printf("ls failed.\n");
+                
+                
+                printf("msg c %d\n", msg_counter);
+
+
             }
         }
     }
