@@ -304,8 +304,8 @@ int main()
 
                     }
                 }
-                // huge_buffer[huge_buffer_counter] = "\0";
-                printf("ls:\n%s\n", huge_buffer);
+                // print ls buffer
+                printf("%s\n", huge_buffer);
             }
         }
     }
