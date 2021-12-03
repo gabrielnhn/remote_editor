@@ -86,8 +86,7 @@ int main()
     get_realpath(".", client_dir);
 
     char huge_buffer[A_LOT];
-    int huge_buffer_counter = 0;
-
+    // int huge_buffer_counter = 0;
 
     char command[STR_MAX];
     int send_retval, recv_retval;
@@ -184,7 +183,7 @@ int main()
             else if (command_id == LS)
             {
                 strcpy(huge_buffer, "");
-                huge_buffer_counter = 0;
+                // huge_buffer_counter = 0;
                 
                 // set request packet
                 memset(request.data, 0, DATA_BYTES);

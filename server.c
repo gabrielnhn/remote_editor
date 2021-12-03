@@ -34,7 +34,7 @@ int parse_command_packet(packet_t* packet, int* type, char* data, int* data_size
     
     if (packet->type == LS)
     {
-        printf("GOT LS\n");
+        printf("ls received\n");
         ls_to_string(server_dir, huge_buffer);
         *type = LS_CONTENT;
         return LS;
@@ -134,6 +134,7 @@ int main()
                         int length = strlen(huge_buffer) + 1;
 
                         bool sent_succexy = true;
+                        printf("Starting transmission:");
                         while(huge_buffer_counter < length)
                         {
                             if (sent_succexy)
@@ -155,6 +156,7 @@ int main()
 
                             // send response
                             // printf("Sending packet, id %d, i%d/%d\n", response.packet_id, huge_buffer_counter, length);
+                            printf("##");
                             send_retval = send(socket, &packet_array, PACKET_MAX_BYTES, 0);
 
                             if (send_retval == -1)
@@ -229,7 +231,7 @@ int main()
                         response.data_size = 0;
                         make_packet_array(packet_array, &response);
                         send_retval = send(socket, &packet_array, PACKET_MAX_BYTES, 0);
-
+                        printf(" Done.\n");
                     }
                 }
                 else // asking for previous message?
