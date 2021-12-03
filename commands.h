@@ -27,4 +27,9 @@ int ls(char* path);
 
 int indexed_cat(const char* path, char* destination);
 
+int check_filename(const char* path);
+
+int get_line(const char* path, int line_index, char* destination);
+
+
 #endif

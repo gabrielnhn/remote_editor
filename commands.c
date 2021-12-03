@@ -147,6 +147,19 @@ int indexed_cat(const char* path, char* destination)
     return retval;
 }
 
+int check_filename(const char* path)
+{
+    FILE *f;
+    f = fopen (path, "r") ;
+
+    if (f == NULL)
+        return FILE_DOES_NOT_EXIST;
+    
+    fclose(f);
+    return SUCCEXY;
+}
+
+
 int get_line(const char* path, int line_index, char* destination)
 {
     FILE *f;
@@ -168,7 +181,6 @@ int get_line(const char* path, int line_index, char* destination)
         return retval;
     }
 
-    char buffer[STR_MAX + 10];
     char line[STR_MAX];
     strcpy(destination, "");
 

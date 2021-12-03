@@ -69,6 +69,25 @@ int parse_command_packet(packet_t* packet, int* type, char* data, int* data_size
         *type = FILE_CONTENT;
         return VER;
     }
+
+    if (packet->type == LINHA)
+    {
+        printf("LINHA received\n");
+        
+        strcpy(huge_buffer, packet->data);
+        int retval = check_filename(huge_buffer);
+        if (retval != SUCCEXY)
+        {
+            printf("LINHA ERROR\n");
+            *data = retval;
+            *type = ERROR;
+            *data_size = 1;
+            return ERROR;
+        }
+        printf("linha has valid filename.\n");
+        *type = ACK;
+        return LINHA;
+    }
     
 
     return NOP;
@@ -143,6 +162,117 @@ int main()
                     // execute command
                     int command_id = parse_command_packet(&request, &type, data, &data_size);
 
+                    int line1, line2;
+
+                    if (command_id == LINHA)
+                    {
+                        // LINHA has a different overhead when compared to other commands.
+                        // we'll treat this and then use the foundations below this clause.
+
+                        bool got_lines_query = false;
+                        msg_counter = (msg_counter + 1) % 16;
+
+                        int send_counter = 0;
+                        while (not got_lines_query and send_counter < MAX_SEND_TRIES)
+                        {
+                            // set ACK response
+
+                            memset(response.data, 0, DATA_BYTES);
+                            memcpy(response.data, data, data_size);
+                            response.data_size = data_size;
+                            response.type = type;
+                            response.packet_id = msg_counter;
+                            make_packet_array(packet_array, &response);
+
+                            // printf("response type:");
+                            // print_bits(1, &response.type);
+                            // printf("\n");
+
+                            // printf("Sending retval=%d on msg %d \n", *response.data, msg_counter);
+                            // printf("response id %d\n", response.packet_id);
+
+                            // send response
+                            send_retval = send(socket, &packet_array, PACKET_MAX_BYTES, 0);
+                            if (send_retval == -1)
+                                printf("Could not send response.\n");
+
+                            usleep(TIME_BETWEEN_TRIES);
+
+                            // try to receive LINHAS_INDEXES from client
+                            int type_of_response = LINHAS_INDEXES;
+                            bool got_something = false;
+                            int recv_counter = 0;
+
+                            while (not got_something and (recv_counter < MAX_RECEIVE_TRIES))
+                            // if data_stream_finished, client won't receive LS_CONTENT anymore.
+                            {
+                                // printf("try recv\n");
+                                recv_retval = recv(socket,&packet_array, PACKET_MAX_BYTES, 0);
+
+                                if (recv_retval != -1){
+                                    get_packet_from_array(packet_array, &response);
+                                }
+                                else
+                                    memset(packet_array, 0, PACKET_MAX_BYTES);
+
+                                // check response
+                                if ((recv_retval != -1) and valid_packet(&response, (msg_counter + 1) % 16)
+                                    and response.origin_address == CLIENT)
+                                {
+                                    // REAL PACKAGE!!!!
+                                    if (response.type == type_of_response)
+                                    {
+                                        printf("Got line: '%d'\n", *response.data);
+                                        line1 = *response.data; 
+                                        got_something = true;
+                                        got_lines_query = true;
+                                    }
+                                    else if (response.type == command_id)
+                                    {
+                                        got_something = true;
+                                    }
+
+                                    got_something = true;
+                                }
+                                // timeout
+                                else
+                                {
+                                    if (recv_retval != -1)
+                                    {
+                                        if (response.origin_address == CLIENT){
+                                            // printf("Didnt want %d. wanted %d\n", response.packet_id, (msg_counter + 1) % 16);
+                                            // print_packet(&response);
+                                            // printf("\n");
+                                        }
+                                    }
+                                    recv_counter++;
+                                }
+                            }
+                            send_counter++;
+                        }
+
+                        if (got_lines_query)
+                        {
+                            char path[STR_MAX];
+                            strcpy(path, huge_buffer);
+                            int retval = get_line(path, line1, huge_buffer);
+                            if (retval != SUCCEXY)
+                            {
+                                printf("LINHA failed");
+                                // error, use next case to send it
+                                command_id = ERROR;
+                                type = ERROR;
+                                *data = retval;
+                                data_size = 1;
+                            }
+                            //else:
+                            //    as command_id is still LINHA, we will still send the contents of huge_buffer.
+
+                        }
+
+
+                    }
+
 
                     if ((command_id == CD) or (command_id == ERROR))
                     {
@@ -170,10 +300,13 @@ int main()
                         msg_counter = (msg_counter + 1) % 16;
                         usleep(TIME_BETWEEN_TRIES);
                     }
+                    
 
                     // LS LS LS OR VER
 
-                    else if ((command_id == LS) or (command_id == VER))
+
+
+                    if ((command_id == LS) or (command_id == VER) or (command_id == LINHA))
                     {
                         // Now it gets tricky.
                         // huge_buffer has LS output.

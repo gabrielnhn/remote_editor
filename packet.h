@@ -24,6 +24,8 @@
 #define EDIT 8
 #define COMPILAR 9
 
+
+#define LINHAS_INDEXES 0b1010
 #define LS_CONTENT 0b1011
 #define FILE_CONTENT 0b1100
 #define ERROR 0b1111
