@@ -12,7 +12,7 @@ char server_dir[STR_MAX];
 char trash[STR_MAX];
 
 
-int parse_str_command(char* command, int* type, char* data, int* data_size)
+int parse_str_command(char* command)
 {
     printf("client@%s : ", client_dir);
     char* fgets_retval = fgets(command, STR_MAX, stdin);
@@ -28,9 +28,9 @@ int parse_str_command(char* command, int* type, char* data, int* data_size)
 
     if (strncmp(command, "cd ", strlen("cd ")) == 0)
     {
-        strcpy(data, command + 3);
-        *data_size = strlen(command + 3) + 1;
-        *type = 0;
+        // strcpy(data, command + 3);
+        // *data_size = strlen(command + 3) + 1;
+        // *type = 0;
         return CD;
     }
     else if (strncmp(command, "lcd ", strlen("lcd ")) == 0)
@@ -47,8 +47,8 @@ int parse_str_command(char* command, int* type, char* data, int* data_size)
     } 
     else if (strncmp(command, "ls", strlen("ls")) == 0)
     {
-        *data_size = 0;
-        *type = LS;
+        // *data_size = 0;
+        // *type = LS;
         return LS;
     }
     else if (strncmp(command, "lls", strlen("lls")) == 0)
@@ -99,18 +99,21 @@ int main()
 
     while(1)
     {
-        ///////// GET COMMAND
+        //  GET COMMAND
         int type;
-        char data[15];
-        command_id = parse_str_command(command, &type, data, &data_size);
+        char data[DATA_BYTES];
+        command_id = parse_str_command(command);
         int command_retval;
 
         if (command_id != NOP)
         {
             if (command_id == CD)
             {
-                int counter = 0;
+                strcpy(data, command + 3);
+                data_size = strlen(command + 3) + 1;
+                type = 0;
 
+                int counter = 0;
                 sent_succexy = false;
                 while (not sent_succexy and counter < MAX_SEND_TRIES)
                 {
@@ -175,13 +178,12 @@ int main()
             }
 
 
-
             // LS LS lS
-
-
 
             else if (command_id == LS)
             {
+                data_size = 0;
+                type = LS;
                 strcpy(huge_buffer, "");
                 // huge_buffer_counter = 0;
                 
