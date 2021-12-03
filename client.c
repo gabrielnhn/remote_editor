@@ -156,11 +156,11 @@ int main()
                         }
                         else
                         {
-                            printf("bruh %d %d %d\n", (recv_retval != -1), valid_packet(&response, (msg_counter + 1) % 16),
-                             response.origin_address == SERVER);
+                            // printf("bruh %d %d %d\n", (recv_retval != -1), valid_packet(&response, (msg_counter + 1) % 16),
+                            //  response.origin_address == SERVER);
 
                             if (response.origin_address == SERVER){
-                                printf("Got %d, wanted %d\n", response.packet_id, (msg_counter + 1) % 16);
+                                // printf("Got %d, wanted %d\n", response.packet_id, (msg_counter + 1) % 16);
                                 // print_packet(&response);
                             }
 
@@ -179,8 +179,8 @@ int main()
                     msg_counter = (msg_counter + 2) % 16;
                     // printf("counter: %d\n", msg_counter);
 
-                    
-                    printf("retval: %d\n", command_retval);
+                    if (command_retval != 0)
+                        printf("retval: %d\n", command_retval);
                 }
                 else
                 {
@@ -275,7 +275,7 @@ int main()
                                 }
                                 else if (response.type == END)
                                 {
-                                    printf("transmission ended\n");
+                                    // printf("transmission ended\n");
                                     got_something = true;
                                     got_succexy = true;
                                     LS_to_be_over = true;
