@@ -187,12 +187,13 @@ int main()
                 {
                     data_size = 0;
                     memset(request.data, 0, DATA_BYTES);
-                    request.data_size = data_size;
+                    data_size = 0;
                 }
                 else if (command_id == VER)
                 {
                     // remove "ver "
                     strcpy(request.data, command + 4);
+                    data_size = strlen(command + 4);
                     printf("ver arg: %s\n", request.data);
                 }
                 
@@ -218,7 +219,7 @@ int main()
                     while (not got_succexy and send_counter < MAX_SEND_TRIES)
                     {
                         // set ACK or NACK
-                        memset(request.data, 0, DATA_BYTES);
+                        // memset(request.data, 0, DATA_BYTES);
                         request.data_size = data_size;
                         request.type = type;
                         request.packet_id = msg_counter;
