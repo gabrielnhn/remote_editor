@@ -219,6 +219,7 @@ int main()
                         request.type = type;
                         request.packet_id = msg_counter;
                         make_packet_array(packet_array, &request);
+                        print_packet(&request);
                         
                         // send packet
                         // printf("sending packet, id %d, type %d\n", request.packet_id, request.type);
@@ -248,6 +249,7 @@ int main()
                                 // REAL PACKAGE!!!!
                                 if (response.type == LS_CONTENT)
                                 {
+                                    request_validated = true;
                                     // printf("Got content: '%s'\n", response.data);
                                     strcat(huge_buffer, response.data);
                                     got_something = true;

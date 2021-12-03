@@ -35,6 +35,7 @@ int parse_command_packet(packet_t* packet, int* type, char* data, int* data_size
     if (packet->type == LS)
     {
         printf("ls received\n");
+        print_packet(packet);
 
         if (ls_to_string(server_dir, huge_buffer) != SUCCEXY){
             printf("LS ERROR\n");
@@ -282,7 +283,7 @@ int main()
                                 }
                             }
                         }
-                        msg_counter = (msg_counter + 2) % 16;
+                        msg_counter = (msg_counter + 1) % 16;
                         printf("Done.\n");
                         printf("msg c %d\n", msg_counter);
                     }
