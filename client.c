@@ -39,6 +39,10 @@ int parse_str_command(char* command)
     {
         return LS;
     }
+    else if (strncmp(command, "ver", strlen("ls")) == 0)
+    {
+        return VER;
+    }
     else if (strncmp(command, "lls", strlen("lls")) == 0)
     {
         ls(client_dir);
@@ -174,20 +178,29 @@ int main()
             }
 
 
-            // LS LS lS
+            // LS LS OR VER
 
-            else if (command_id == LS)
+            else if ((command_id == LS) or (command_id == VER))
             {
-                data_size = 0;
-                type = LS;
-                strcpy(huge_buffer, "");
-                
                 // set request packet
-                memset(request.data, 0, DATA_BYTES);
-                memcpy(request.data, data, data_size);
-                request.data_size = data_size;
+                if (command_id == LS)
+                {
+                    data_size = 0;
+                    memset(request.data, 0, DATA_BYTES);
+                    request.data_size = data_size;
+                }
+                else if (command_id == VER)
+                {
+                    // remove "ver "
+                    strcpy(request.data, command + 4);
+                    printf("ver arg: %s\n", request.data);
+                }
+                
+                type = command_id;
                 request.type = type;
                 
+                
+                strcpy(huge_buffer, "");
 
                 bool request_validated = false; // LS command was acknowledged
                 bool LS_over = false; // should end
@@ -242,7 +255,7 @@ int main()
                                 and response.origin_address == SERVER)
                             {
                                 // REAL PACKAGE!!!!
-                                if (response.type == LS_CONTENT)
+                                if (response.type == command_id)
                                 {
                                     request_validated = true;
                                     // printf("Got content: '%s'\n", response.data);
@@ -281,7 +294,7 @@ int main()
                             if (request_validated)
                                 type = NACK;
                             else
-                                type = LS;
+                                type = command_id;
 
                             data_size = 0;
                         }

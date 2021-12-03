@@ -121,7 +121,7 @@ int indexed_cat(const char* path, char* destination)
     }
     if (retval != SUCCEXY)
     {
-        fclose(f);
+        printf("%s reading failed\n", path);
         return retval;
     }
 

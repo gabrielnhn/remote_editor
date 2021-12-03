@@ -40,6 +40,7 @@ int parse_command_packet(packet_t* packet, int* type, char* data, int* data_size
             printf("LS ERROR\n");
             return ERROR;
         }
+        *type = LS;
         return LS;
     }
 
@@ -55,6 +56,7 @@ int parse_command_packet(packet_t* packet, int* type, char* data, int* data_size
             return ERROR;
         }
         printf("%s", huge_buffer);
+        *type = VER;
         return VER;
     }
     
@@ -154,9 +156,9 @@ int main()
                         usleep(TIME_BETWEEN_TRIES);
                     }
 
-                    // LS LS LS
+                    // LS LS LS OR VER
 
-                    else if (command_id == LS)
+                    else if ((command_id == LS) or (command_id == VER))
                     {
                         // Now it gets tricky.
                         // huge_buffer has LS output.
@@ -183,7 +185,7 @@ int main()
                                 // printf("counter: %d < %d\n", huge_buffer_counter, length);
 
                                 response.data_size = strlen(response.data) + 1;
-                                response.type = LS_CONTENT;
+                                response.type = type;
                                 response.packet_id = msg_counter;
 
                                 make_packet_array(packet_array, &response);
