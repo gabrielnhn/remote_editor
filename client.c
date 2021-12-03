@@ -142,6 +142,8 @@ int main()
 
                         if (recv_retval != -1)
                             get_packet_from_array(packet_array, &response);
+                        else
+                            memset(packet_array, 0, PACKET_MAX_BYTES);
 
                         // check response
                         if ((recv_retval != -1) and valid_packet(&response, (msg_counter + 1) % 16)
@@ -157,17 +159,26 @@ int main()
                         }
                         else
                         {
+                            // printf("bruh\n");
+                            if (response.header == SERVER)
+                                printf("Got %d, wanted %d\n", response.packet_id, (msg_counter + 1) % 16);
+
                             local_counter++;
                             if (local_counter > MAX_RECEIVE_TRIES)
                                 got_something = true;
                         }
+                        usleep(TIME_BETWEEN_TRIES);
+
                     }
                     // printf("counter: %d\n", counter);
                     counter++;
                 }
                 if (sent_succexy)
                 {
-                    msg_counter += 2;
+                    msg_counter = (msg_counter + 2) % 16;
+                    printf("counter: %d\n", msg_counter);
+
+                    
                     printf("retval: %d\n", command_retval);
                 }
                 else
@@ -219,7 +230,7 @@ int main()
                         request.type = type;
                         request.packet_id = msg_counter;
                         make_packet_array(packet_array, &request);
-                        print_packet(&request);
+                        // print_packet(&request);
                         
                         // send packet
                         // printf("sending packet, id %d, type %d\n", request.packet_id, request.type);
@@ -233,7 +244,7 @@ int main()
                         bool got_something = false;
                         int local_counter = 0;
 
-                        while (not got_something)
+                        while (not got_something and not LS_to_be_over)
                         {
                             // printf("try recv\n");
                             recv_retval = recv(socket,&packet_array, PACKET_MAX_BYTES, 0);
@@ -310,6 +321,7 @@ int main()
                         {
                             // printf("msg %d tbo %d\n", msg_counter, LS_to_be_over);
                             msg_counter = (msg_counter + 2) % 16;
+                            printf("counter: %d\n", msg_counter);
                             type = ACK;
                         }
                     }
@@ -319,9 +331,6 @@ int main()
                 }
                 else
                     printf("ls failed.\n");
-                
-                
-                printf("msg c %d\n", msg_counter);
 
 
             }

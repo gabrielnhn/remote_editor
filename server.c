@@ -69,6 +69,7 @@ int main()
 
     bool from_client;
     bool duplicate = false;
+    int previous_id;
 
     while(1)
     {
@@ -77,16 +78,19 @@ int main()
         {
             get_packet_from_array(packet_array, &request);
             // Check for duplicate
-            printf("evaluated %d, considering %d\n", request.packet_id, msg_counter);
+            if (request.origin_address == CLIENT)
+            {
+                printf("evaluated %d, considering %d\n", request.packet_id, msg_counter);
 
-            int previous_id = msg_counter - 2;
-            if (previous_id < 0)
-                previous_id = 16 + previous_id;
+                previous_id = msg_counter - 2;
+                if (previous_id < 0)
+                    previous_id = 16 + previous_id;
 
-            if (request.packet_id == previous_id)
-                duplicate = not duplicate;
-            else
-                duplicate = false;
+                if (request.packet_id == previous_id)
+                    duplicate = not duplicate;
+                else
+                    duplicate = false;
+            }
 
             from_client = (request.origin_address == CLIENT);
 
@@ -113,10 +117,10 @@ int main()
                         memcpy(response.data, data, data_size);
                         response.data_size = data_size;
                         response.type = type;
-                        printf("Sending retval = %d\n", *response.data);
 
                         msg_counter = (msg_counter + 1) % 16;
                         response.packet_id = msg_counter;
+                        printf("Sending retval = %d with msg %d \n", *response.data, msg_counter);
                         // printf("response id %d\n", response.packet_id);
 
                         make_packet_array(packet_array, &response);
@@ -292,8 +296,9 @@ int main()
                 {
                     if (valid_packet(&request, previous_id))
                     {
-                        printf("resending message %d\n", previous_id);
+                        printf("resending message %d\n", previous_id + 1);
                         // resend response
+                        response.packet_id = previous_id + 1;
                         make_packet_array(packet_array, &response);
                         send_retval = send(socket, &packet_array, PACKET_MAX_BYTES, 0);
                         if (send_retval == -1)
