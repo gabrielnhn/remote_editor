@@ -186,7 +186,7 @@ int main()
                             bool got_something = false;
                             int recv_counter = 0;
 
-                            while (not got_something)
+                            while (not got_something and (recv_counter < MAX_RECEIVE_TRIES))
                             {
                                 recv_retval = recv(socket,&packet_array, PACKET_MAX_BYTES, 0);
 
@@ -229,9 +229,6 @@ int main()
                                 else
                                 {
                                     recv_counter++;
-
-                                    if (recv_counter > MAX_RECEIVE_TRIES)
-                                        got_something = true;
                                 }
                                 if (sent_succexy)
                                     msg_counter = (msg_counter + 2) % 16;
@@ -262,7 +259,7 @@ int main()
                             bool got_something = false;
                             int recv_counter = 0;
 
-                            while (not got_something)
+                            while (not got_something and (recv_counter < MAX_RECEIVE_TRIES))
                             {
                                 recv_retval = recv(socket,&packet_array, PACKET_MAX_BYTES, 0);
                                 if (recv_retval != -1)
@@ -289,8 +286,6 @@ int main()
                                 else
                                 {
                                     recv_counter++;
-                                    if (recv_counter > MAX_RECEIVE_TRIES)
-                                        got_something = true;
                                 }
                             }
                         }
