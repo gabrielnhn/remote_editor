@@ -122,7 +122,7 @@ int main()
                     bool got_something = false;
                     int recv_counter = 0;
 
-                    while (not got_something)
+                    while (not got_something and (recv_counter < MAX_RECEIVE_TRIES))
                     {
                         recv_retval = recv(socket,&packet_array, PACKET_MAX_BYTES, 0);
 
@@ -151,8 +151,6 @@ int main()
                             }
 
                             recv_counter++;
-                            if (recv_counter > MAX_RECEIVE_TRIES)
-                                got_something = true;
                         }
                         usleep(TIME_BETWEEN_TRIES);
 
@@ -226,7 +224,8 @@ int main()
                         bool got_something = false;
                         int recv_counter = 0;
 
-                        while (not got_something and not LS_to_be_over)
+                        while (not got_something and (recv_counter < MAX_RECEIVE_TRIES) 
+                               and not LS_to_be_over)
                         // if LS_to_be_over, client won't receive LS_CONTENT anymore.
                         {
                             // printf("try recv\n");
@@ -272,13 +271,12 @@ int main()
                                     }
                                 }
                                 recv_counter++;
-                                if (recv_counter > MAX_RECEIVE_TRIES)
-                                    got_something = true;
                             }
                         }
                         send_counter++;
 
                         if (not got_succexy)
+                        // got LS_CONTENT successfully
                         {
                             if (request_validated)
                                 type = NACK;
@@ -295,12 +293,14 @@ int main()
                         }
                     }
                 }
+
+                // LS endend
+
                 if (LS_over){
                     printf("%s\n", huge_buffer);
                 }
                 else
                     printf("ls failed.\n");
-
 
             }
         }
