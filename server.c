@@ -129,24 +129,28 @@ int main()
 
                         usleep(TIME_BETWEEN_TRIES);
                     }
+
+
+
+
+
                     else if (command_type == STREAM)
                     {
                         huge_buffer_counter = 0;
                         int length = strlen(huge_buffer) + 1;
-                        msg_counter = (msg_counter + 1);
-                        response.packet_id = msg_counter;
-                        msg_counter = (msg_counter + 1);
-                        response.type = type;
-                        make_packet_array(packet_array, &response);
+                        // response.packet_id = msg_counter;
+                        // response.type = type;
+                        // make_packet_array(packet_array, &response);
 
+                        bool sent_succexy = true;
                         while(huge_buffer_counter < length)
                         {
-                            bool sent_succexy = false;
-
                             if (sent_succexy)
                             {
-                                memcpy(response.data, huge_buffer + huge_buffer_counter, 15);
-                                huge_buffer_counter += 16;
+                                // memcpy(response.data, huge_buffer + huge_buffer_counter, 15);
+                                strncpy(response.data, huge_buffer + huge_buffer_counter, 14);
+                                printf("sending response.data: %s\n", response.data);
+                                huge_buffer_counter += 15;
 
                                 response.data_size = 15;
                                 response.type = LS_CONTENT;
@@ -156,10 +160,11 @@ int main()
                                 // printf("response id %d\n", response.packet_id);
 
                                 make_packet_array(packet_array, &response);
-                                msg_counter = (msg_counter + 2) % 16;
+                                sent_succexy = false;
                             }
 
                             // send response
+                            print_packet(&response);
                             printf("Sending packet, id %d, i%d/%d\n", response.packet_id, huge_buffer_counter, length);
                             send_retval = send(socket, &packet_array, PACKET_MAX_BYTES, 0);
 
@@ -224,8 +229,9 @@ int main()
                                         local_counter++;
                                         if (request.origin_address == CLIENT)
                                         {
-                                            print_packet(&request);
-                                            printf("wanted id %d\n", msg_counter);
+                                            printf("Didnt want %d. wanted %d\n", request.packet_id, (msg_counter + 1));
+                                            // print_packet(&request);
+                                            // printf("\n");
                                         }
                                         else
                                             printf("b.");
@@ -236,7 +242,6 @@ int main()
                                         got_something = true;
                                 }
                             }
-                            // msg_counter = (msg_counter + 1) % 16; 
                         }
                     }
                 }

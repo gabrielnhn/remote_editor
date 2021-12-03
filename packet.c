@@ -141,6 +141,11 @@ int make_packet_array(char* array, packet_t* packet)
 
 void print_packet(packet_t* packet)
 {
+    printf("packet->origin: ");
+    if (packet->origin_address == SERVER)
+        printf("SERVER\n");
+    else
+        printf("CLIENT");
     printf("packet->data_size: %d\n", packet->data_size);
     printf("packet->packet_id: %d\n", packet->packet_id);
     printf("packet->type %d\n", packet->type);
@@ -149,6 +154,6 @@ void print_packet(packet_t* packet)
     {       
         printf("%c", packet->data[i]);
     }
-    printf("parity %d\n", packet->parity);
+    printf("\nparity %d\n", packet->parity);
 
 }
