@@ -26,27 +26,17 @@ int parse_str_command(char* command)
 
     if (strncmp(command, "cd ", strlen("cd ")) == 0)
     {
-        // strcpy(data, command + 3);
-        // *data_size = strlen(command + 3) + 1;
-        // *type = 0;
         return CD;
     }
     else if (strncmp(command, "lcd ", strlen("lcd ")) == 0)
     {
-        if (cd(command + 4, client_dir) == SUCCEXY)
-        {
-            // printf("updated\n");
-            true;
-        }
-        else
+        if (cd(command + 4, client_dir) != SUCCEXY)
             printf("lcd failed.\n");
         
         return NOP; // local operation
     } 
     else if (strncmp(command, "ls", strlen("ls")) == 0)
     {
-        // *data_size = 0;
-        // *type = LS;
         return LS;
     }
     else if (strncmp(command, "lls", strlen("lls")) == 0)
@@ -67,7 +57,6 @@ int parse_str_command(char* command)
     }
 }
 
-
 int main()
 {
     setvbuf(stdout, NULL, _IONBF, 0);
@@ -84,7 +73,6 @@ int main()
     get_realpath(".", client_dir);
 
     char huge_buffer[A_LOT];
-    // int huge_buffer_counter = 0;
 
     char command[STR_MAX];
     int send_retval, recv_retval;
@@ -105,22 +93,23 @@ int main()
         {
             if (command_id == CD)
             {
+                // remove "cd " from command string
                 strcpy(data, command + 3);
                 data_size = strlen(command + 3) + 1;
-                type = 0;
+                type = CD;
 
-                int counter = 0;
+                // set request packet
+                memset(request.data, 0, DATA_BYTES);
+                memcpy(request.data, data, data_size);
+                request.data_size = data_size;
+                request.type = type;
+                request.packet_id = msg_counter;
+                make_packet_array(packet_array, &request);
+
+                int send_counter = 0;
                 sent_succexy = false;
-                while (not sent_succexy and counter < MAX_SEND_TRIES)
+                while (not sent_succexy and send_counter < MAX_SEND_TRIES)
                 {
-                    // set request packet
-                    memset(request.data, 0, DATA_BYTES);
-                    memcpy(request.data, data, data_size);
-                    request.data_size = data_size;
-                    request.type = type;
-                    request.packet_id = msg_counter;
-                    make_packet_array(packet_array, &request);
-                    
                     // send request
                     // printf("sending\n");
                     send_retval = send(socket, &packet_array, PACKET_MAX_BYTES, 0);
@@ -131,7 +120,7 @@ int main()
 
                     // receive response FROM SERVER
                     bool got_something = false;
-                    int local_counter = 0;
+                    int recv_counter = 0;
 
                     while (not got_something)
                     {
@@ -156,25 +145,23 @@ int main()
                         }
                         else
                         {
-                            // printf("bruh %d %d %d\n", (recv_retval != -1), valid_packet(&response, (msg_counter + 1) % 16),
-                            //  response.origin_address == SERVER);
-
                             if (response.origin_address == SERVER){
                                 // printf("Got %d, wanted %d\n", response.packet_id, (msg_counter + 1) % 16);
                                 // print_packet(&response);
                             }
 
-                            local_counter++;
-                            if (local_counter > MAX_RECEIVE_TRIES)
+                            recv_counter++;
+                            if (recv_counter > MAX_RECEIVE_TRIES)
                                 got_something = true;
                         }
                         usleep(TIME_BETWEEN_TRIES);
 
                     }
-                    // printf("counter: %d\n", counter);
-                    counter++;
+                    send_counter++;
                 }
+
                 if (sent_succexy)
+                // CD command is finished
                 {
                     msg_counter = (msg_counter + 2) % 16;
                     // printf("counter: %d\n", msg_counter);
@@ -196,7 +183,6 @@ int main()
                 data_size = 0;
                 type = LS;
                 strcpy(huge_buffer, "");
-                // huge_buffer_counter = 0;
                 
                 // set request packet
                 memset(request.data, 0, DATA_BYTES);
@@ -204,28 +190,23 @@ int main()
                 request.data_size = data_size;
                 request.type = type;
                 
-                // // send request
-                if (send_retval == -1)
-                    printf("Error: nothing was sent.\n");
 
-                usleep(TIME_BETWEEN_TRIES);
+                bool request_validated = false; // LS command was acknowledged
+                bool LS_over = false; // should end
+                bool LS_to_be_over = false; // should end after this iteration
 
-                bool request_validated = false;
-
-                bool LS_over = false;
-                bool LS_to_be_over = false;
-                int counter = 0;
-                while (not LS_over and counter < MAX_SEND_TRIES)
+                int send_counter = 0;
+                while (not LS_over and send_counter < MAX_SEND_TRIES)
                 {
                     if (LS_to_be_over)
                         LS_over = true;
 
-                    counter = 0;
-                    // for every not final packet 
-                    got_succexy = false;
-                    while (not got_succexy and counter < MAX_SEND_TRIES)
+                    send_counter = 0;
+                    got_succexy = false; // got LS_CONTENT
+                
+                    while (not got_succexy and send_counter < MAX_SEND_TRIES)
                     {
-                        // set packet
+                        // set ACK or NACK
                         memset(request.data, 0, DATA_BYTES);
                         request.data_size = data_size;
                         request.type = type;
@@ -233,7 +214,7 @@ int main()
                         make_packet_array(packet_array, &request);
                         // print_packet(&request);
                         
-                        // send packet
+                        // send ACK/NACK
                         // printf("sending packet, id %d, type %d\n", request.packet_id, request.type);
                         send_retval = send(socket, &packet_array, PACKET_MAX_BYTES, 0);
                         if (send_retval == -1)
@@ -241,11 +222,12 @@ int main()
 
                         usleep(TIME_BETWEEN_TRIES);
 
-                        // receive response FROM SERVER
+                        // receive LS_CONTENT from server
                         bool got_something = false;
-                        int local_counter = 0;
+                        int recv_counter = 0;
 
                         while (not got_something and not LS_to_be_over)
+                        // if LS_to_be_over, client won't receive LS_CONTENT anymore.
                         {
                             // printf("try recv\n");
                             recv_retval = recv(socket,&packet_array, PACKET_MAX_BYTES, 0);
@@ -253,6 +235,8 @@ int main()
                             if (recv_retval != -1){
                                 get_packet_from_array(packet_array, &response);
                             }
+                            else
+                                memset(packet_array, 0, PACKET_MAX_BYTES);
 
                             // check response
                             if ((recv_retval != -1) and valid_packet(&response, (msg_counter + 1) % 16)
@@ -267,25 +251,12 @@ int main()
                                     got_something = true;
                                     got_succexy = true;
                                 }
-                                else if (response.type == ERROR)
-                                {
-                                    printf("command failed\n");
-                                    got_something = true;
-                                    got_succexy = true;
-                                }
                                 else if (response.type == END)
                                 {
                                     // printf("transmission ended\n");
                                     got_something = true;
                                     got_succexy = true;
                                     LS_to_be_over = true;
-
-                                    // send last ACK
-                                    // request.type = ACK;
-                                    // request.data_size = 0;
-                                    // request.packet_id = msg_counter;
-                                    // make_packet_array(packet_array, &request);
-                                    // send_retval = send(socket, &packet_array, PACKET_MAX_BYTES, 0);
                                 }
                                 got_something = true;
                             }
@@ -299,17 +270,15 @@ int main()
                                         // print_packet(&response);
                                         // printf("\n");
                                     }
-                                    // else
-                                    //     printf("b.");
                                 }
-                                local_counter++;
-                                if (local_counter > MAX_RECEIVE_TRIES)
+                                recv_counter++;
+                                if (recv_counter > MAX_RECEIVE_TRIES)
                                     got_something = true;
                             }
                         }
-                        counter++;
+                        send_counter++;
 
-                        if (got_something and not got_succexy)
+                        if (not got_succexy)
                         {
                             if (request_validated)
                                 type = NACK;
@@ -318,9 +287,8 @@ int main()
 
                             data_size = 0;
                         }
-                        if (got_something and got_succexy)
+                        else
                         {
-                            // printf("msg %d tbo %d\n", msg_counter, LS_to_be_over);
                             msg_counter = (msg_counter + 2) % 16;
                             // printf("counter: %d\n", msg_counter);
                             type = ACK;
