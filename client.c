@@ -182,15 +182,18 @@ int main()
 
             else if ((command_id == LS) or (command_id == VER))
             {
+                int type_of_response;
                 // set request packet
                 if (command_id == LS)
                 {
+                    type_of_response = LS_CONTENT;
                     data_size = 0;
                     memset(request.data, 0, DATA_BYTES);
                     data_size = 0;
                 }
                 else if (command_id == VER)
                 {
+                    type_of_response = FILE_CONTENT;
                     // remove "ver "
                     strcpy(request.data, command + 4);
                     data_size = strlen(command + 4);
@@ -257,7 +260,7 @@ int main()
                                 and response.origin_address == SERVER)
                             {
                                 // REAL PACKAGE!!!!
-                                if (response.type == command_id)
+                                if (response.type == type_of_response)
                                 {
                                     request_validated = true;
                                     // printf("Got content: '%s'\n", response.data);

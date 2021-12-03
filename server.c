@@ -46,7 +46,7 @@ int parse_command_packet(packet_t* packet, int* type, char* data, int* data_size
             return ERROR;
         }
 
-        *type = LS;
+        *type = LS_CONTENT;
         return LS;
     }
 
@@ -66,7 +66,7 @@ int parse_command_packet(packet_t* packet, int* type, char* data, int* data_size
             return ERROR;
         }
         printf("ver was successfull.\n");
-        *type = VER;
+        *type = FILE_CONTENT;
         return VER;
     }
     

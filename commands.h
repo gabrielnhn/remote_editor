@@ -16,8 +16,6 @@
 
 // no operation / local operation
 #define NOP -1
-#define ONE_NIGHT_STAND 1
-#define STREAM 2
 
 bool get_realpath(const char* path, char* buf);
 
