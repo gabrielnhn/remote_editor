@@ -88,7 +88,6 @@ int ls_to_string(const char* path, char* destination)
         return FORBIDDEN;
     }
 
-
     while((myfile = readdir(mydir)) != NULL)
     {
         // printf("bruh %s\n", path);

@@ -148,8 +148,10 @@ void print_packet(packet_t* packet)
     printf("packet->origin: ");
     if (packet->origin_address == SERVER)
         printf("SERVER\n");
-    else
+    else if (packet->origin_address == CLIENT)
         printf("CLIENT\n");
+    else
+        printf("%d\n",packet->origin_address);
     printf("packet->data_size: %d\n", packet->data_size);
     printf("packet->packet_id: %d\n", packet->packet_id);
     printf("packet->type %d\n", packet->type);
