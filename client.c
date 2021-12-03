@@ -241,16 +241,15 @@ int main()
 
                         while (not got_something)
                         {
-                            // printf("try recv\n");
-                            recv_retval = recv(socket,&packet_array, PACKET_MAX_BYTES, 0);
-
+                            recv_retval = recv(socket, &packet_array, PACKET_MAX_BYTES, 0);
                             if (recv_retval != -1){
-                                // printf("got something bruh, ");
+                                // printf("got something\n");
                                 get_packet_from_array(packet_array, &response);
-                                // if (response.origin_address == SERVER)
-                                //     printf("        from the server\n");
-                                // else
-                                //     printf("        from myself LUL\n");
+                            }
+                            else
+                            {
+                                memset(packet_array, 0, PACKET_MAX_BYTES);
+                                get_packet_from_array(packet_array, &response);
                             }
 
                             // check response
@@ -283,15 +282,14 @@ int main()
                                 if (recv_retval != -1)
                                 {
                                     if (response.origin_address == SERVER){
-                                        // print_packet(&response);
-                                        // printf("v: %d\n", valid_packet(&response, (msg_counter + 1)));
+                                        printf("Received invalid: \n");
+                                        print_packet(&response);
                                         print_bits(PACKET_MAX_BYTES, packet_array);
 
-                                        printf("got %d, wanted %d\n", response.packet_id, (msg_counter + 1));
+                                        // printf("got %d, wanted %d\n", response.packet_id, (msg_counter + 1));
                                     }
-                                    // else
-                                    //     printf("b.");
                                 }
+
                                 local_counter++;
                                 if (local_counter > MAX_RECEIVE_TRIES)
                                     got_something = true;

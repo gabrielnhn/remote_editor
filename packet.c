@@ -1,6 +1,13 @@
 #include "network.h"
 #include "packet.h"
 
+bool sweep(bool x)
+{
+    printf("%d \n", x);
+    return x;
+}
+
+
 bool valid_packet(packet_t* packet, int id)
 {
     if (packet->header != HEADER){
@@ -150,11 +157,11 @@ void print_packet(packet_t* packet)
     printf("packet->data_size: %d\n", packet->data_size);
     printf("packet->packet_id: %d\n", packet->packet_id);
     printf("packet->type %d\n", packet->type);
-    printf("packet->data: ") ;
-    for(int i = 0; i < packet->data_size; i++)
-    {       
-        printf("%c", packet->data[i]);
-    }
-    printf("parity %d\n", packet->parity);
+    // printf("packet->data: ") ;
+    // for(int i = 0; i < packet->data_size; i++)
+    // {       
+    //     printf("%c", packet->data[i]);
+    // }
+    printf("parity: %d\n", packet->parity);
 
 }

@@ -122,6 +122,7 @@ int main()
 
 
                         // send response
+                        // printf("ONE NIGHT\n");
                         send_retval = send(socket, &packet_array, PACKET_MAX_BYTES, 0);
                         if (send_retval == -1)
                             printf("BRUH\n");
@@ -147,7 +148,7 @@ int main()
                             if (sent_succexy)
                             {
                                 strncpy(response.data, huge_buffer + huge_buffer_counter, 15);
-                                printf("data: %s\n", response.data);
+                                // printf("data: '%s'\n", response.data);
                                 huge_buffer_counter += 15;
 
                                 response.data_size = 16;
@@ -155,20 +156,14 @@ int main()
 
                                 msg_counter = (msg_counter + 1) % 16;
                                 response.packet_id = msg_counter;
-                                // printf("response id %d\n", response.packet_id);
-                                // printf("get par: %d\n", get_parity(&response));
-                                make_packet_array(packet_array, &response);
-                                // printf("par: %d\n", response.parity);
                             }
 
                             // send response
-                            printf("Sending packet, id %d, i%d/%d\n", response.packet_id, huge_buffer_counter, length);
+                            printf("Sending packet, id %d, i%d/%d:\n", response.packet_id, huge_buffer_counter, length);
+                            make_packet_array(packet_array, &response);
                             print_bits(PACKET_MAX_BYTES, packet_array);
+                            print_packet(&response);
                             send_retval = send(socket, &packet_array, PACKET_MAX_BYTES, 0);
-
-                            // printf("%d, BRO WHAT\n", send_retval);
-                            // if (send_retval == -1)
-                            //     printf("BRUH\n");
 
                             usleep(TIME_BETWEEN_TRIES);
                             
@@ -245,17 +240,17 @@ int main()
                 }
                 else
                 {
-                    if (valid_packet(&request, previous_id))
-                    {
-                        printf("resending message %d\n", previous_id);
-                        // resend response
-                        make_packet_array(packet_array, &response);
-                        send_retval = send(socket, &packet_array, PACKET_MAX_BYTES, 0);
-                        if (send_retval == -1)
-                            printf("BRUH\n");
-                        usleep(TIME_BETWEEN_TRIES);
+                    // if (valid_packet(&request, previous_id))
+                    // {
+                    //     printf("resending message %d\n", previous_id);
+                    //     // resend response
+                    //     make_packet_array(packet_array, &response);
+                    //     send_retval = send(socket, &packet_array, PACKET_MAX_BYTES, 0);
+                    //     if (send_retval == -1)
+                    //         printf("BRUH\n");
+                    //     usleep(TIME_BETWEEN_TRIES);
                         
-                    }
+                    // }
                 }
             } 
             else
