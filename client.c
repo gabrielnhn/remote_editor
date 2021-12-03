@@ -229,6 +229,7 @@ int main()
                         
                         // send packet
                         printf("sending packet, id %d, type %d\n", request.packet_id, request.type);
+                        // print_packet(&request);
                         send_retval = send(socket, &packet_array, PACKET_MAX_BYTES, 0);
                         if (send_retval == -1)
                             printf("Error: nothing was sent.\n");
@@ -261,7 +262,7 @@ int main()
                                 // REAL PACKAGE!!!!
                                 if (response.type == LS_CONTENT)
                                 {
-                                    printf("Got content: %s\n", response.data);
+                                    printf("Got content: '%s'\n", response.data);
                                     strcat(huge_buffer, response.data);
                                     got_something = true;
                                     got_succexy = true;
@@ -285,9 +286,9 @@ int main()
                                 if (recv_retval != -1)
                                 {
                                     if (response.origin_address == SERVER){
-                                        printf("Didnt want %d. wanted %d\n", response.packet_id, (msg_counter + 1));
-                                        print_packet(&response);
-                                        printf("\n");
+                                        printf("Didnt want %d. wanted %d\n", response.packet_id, (msg_counter + 1) % 16);
+                                        // print_packet(&response);
+                                        // printf("\n");
                                     }
                                     // else
                                     //     printf("b.");
@@ -305,11 +306,12 @@ int main()
                                 type = NACK;
                             else
                                 type = LS;
+
                             data_size = 0;
                         }
                         if (got_something and got_succexy)
                         {
-                            msg_counter += 2;
+                            msg_counter = (msg_counter + 2) % 16;
                             type = ACK;
                         }
                     }

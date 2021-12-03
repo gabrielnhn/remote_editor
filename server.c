@@ -149,14 +149,15 @@ int main()
                             {
                                 // memcpy(response.data, huge_buffer + huge_buffer_counter, 15);
                                 strncpy(response.data, huge_buffer + huge_buffer_counter, 14);
-                                printf("sending response.data: %s\n", response.data);
-                                huge_buffer_counter += 15;
+                                printf("sending response.data: '%s'\n", response.data);
+                                huge_buffer_counter += 14;
 
                                 response.data_size = 15;
                                 response.type = LS_CONTENT;
 
                                 msg_counter = (msg_counter + 1) % 16;
                                 response.packet_id = msg_counter;
+                                msg_counter = (msg_counter + 1) % 16;
                                 // printf("response id %d\n", response.packet_id);
 
                                 make_packet_array(packet_array, &response);
@@ -164,7 +165,7 @@ int main()
                             }
 
                             // send response
-                            print_packet(&response);
+                            // print_packet(&response);
                             printf("Sending packet, id %d, i%d/%d\n", response.packet_id, huge_buffer_counter, length);
                             send_retval = send(socket, &packet_array, PACKET_MAX_BYTES, 0);
 
@@ -190,7 +191,7 @@ int main()
                                     get_packet_from_array(packet_array, &request);
                                 }
                                 // check request
-                                if ((recv_retval != -1) and (valid_packet(&request, (msg_counter /*+1*/) % 16) or valid_packet(&request, (msg_counter -2) % 16))
+                                if ((recv_retval != -1) and (valid_packet(&request, (msg_counter) % 16))
                                     and request.origin_address == CLIENT)
                                 {
                                     // REAL PACKAGE!!!!
@@ -229,12 +230,13 @@ int main()
                                         local_counter++;
                                         if (request.origin_address == CLIENT)
                                         {
-                                            printf("Didnt want %d. wanted %d\n", request.packet_id, (msg_counter + 1));
+                                            // printf("%d\n", valid_packet(&request, ));
+                                            printf("Didnt want %d. wanted %d\n", request.packet_id, (msg_counter));
                                             // print_packet(&request);
                                             // printf("\n");
                                         }
-                                        else
-                                            printf("b.");
+                                        // else
+                                        //     printf("b.");
                                     }
 
 
