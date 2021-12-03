@@ -273,6 +273,13 @@ int main()
                                     got_something = true;
                                     got_succexy = true;
                                 }
+                                else if (response.type == END)
+                                {
+                                    printf("transmission ended\n");
+                                    got_something = true;
+                                    got_succexy = true;
+                                    stream_over = true;
+                                }
                                 else{
                                     printf("Still nothing. wrong type == %d\n", response.type);
                                     // print_packet(&response);
@@ -321,7 +328,8 @@ int main()
 
                     }
                 }
-                huge_buffer[huge_buffer_counter] = "\0";
+                // huge_buffer[huge_buffer_counter] = "\0";
+                printf("ls: %s\n", huge_buffer);
             }
         }
     }

@@ -26,7 +26,7 @@
 
 #define LS_CONTENT 0b1011
 #define ERROR 0b1111
-
+#define END 0b1101
 
 
 

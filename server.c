@@ -152,7 +152,7 @@ int main()
                                 printf("sending response.data: '%s'\n", response.data);
                                 huge_buffer_counter += 14;
 
-                                response.data_size = 15;
+                                response.data_size = 14;
                                 response.type = LS_CONTENT;
 
                                 msg_counter = (msg_counter + 1) % 16;
@@ -245,6 +245,16 @@ int main()
                                 }
                             }
                         }
+
+                        // SEND END
+                        response.type = END;
+                        msg_counter = (msg_counter + 1) % 16;
+                        response.packet_id = msg_counter;
+                        msg_counter = (msg_counter + 1) % 16;
+                        response.data_size = 0;
+                        make_packet_array(packet_array, &response);
+                        send_retval = send(socket, &packet_array, PACKET_MAX_BYTES, 0);
+
                     }
                 }
                 else
