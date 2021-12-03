@@ -42,6 +42,7 @@ int parse_command_packet(packet_t* packet, int* type, char* data, int* data_size
             printf("LS ERROR\n");
             *data = retval;
             *data_size = 1;
+            *type = ERROR;
             return ERROR;
         }
 
@@ -60,6 +61,7 @@ int parse_command_packet(packet_t* packet, int* type, char* data, int* data_size
         {
             printf("VER ERROR\n");
             *data = retval;
+            *type = ERROR;
             *data_size = 1;
             return ERROR;
         }
@@ -142,8 +144,6 @@ int main()
                     int command_id = parse_command_packet(&request, &type, data, &data_size);
 
 
-
-
                     if ((command_id == CD) or (command_id == ERROR))
                     {
                         // set response packet once.
@@ -151,6 +151,9 @@ int main()
                         memcpy(response.data, data, data_size);
                         response.data_size = data_size;
                         response.type = type;
+                        printf("response type:");
+                        print_bits(1, &response.type);
+                        printf("\n");
 
                         msg_counter = (msg_counter + 1) % 16;
                         response.packet_id = msg_counter;

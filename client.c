@@ -194,7 +194,7 @@ int main()
                     // remove "ver "
                     strcpy(request.data, command + 4);
                     data_size = strlen(command + 4);
-                    printf("ver arg: %s\n", request.data);
+                    // printf("ver arg: %s\n", request.data);
                 }
                 
                 type = command_id;
@@ -204,14 +204,15 @@ int main()
                 strcpy(huge_buffer, "");
 
                 bool request_validated = false; // LS command was acknowledged
-                bool LS_over = false; // should end
-                bool LS_to_be_over = false; // should end after this iteration
+                bool command_finished = false; // should end
+                bool data_stream_finished = false; // should end after this iteration
+                bool error = false;
 
                 int send_counter = 0;
-                while (not LS_over and send_counter < MAX_SEND_TRIES)
+                while (not command_finished and send_counter < MAX_SEND_TRIES and not error)
                 {
-                    if (LS_to_be_over)
-                        LS_over = true;
+                    if (data_stream_finished)
+                        command_finished = true;
 
                     send_counter = 0;
                     got_succexy = false; // got LS_CONTENT
@@ -239,8 +240,8 @@ int main()
                         int recv_counter = 0;
 
                         while (not got_something and (recv_counter < MAX_RECEIVE_TRIES) 
-                               and not LS_to_be_over)
-                        // if LS_to_be_over, client won't receive LS_CONTENT anymore.
+                               and not data_stream_finished)
+                        // if data_stream_finished, client won't receive LS_CONTENT anymore.
                         {
                             // printf("try recv\n");
                             recv_retval = recv(socket,&packet_array, PACKET_MAX_BYTES, 0);
@@ -269,7 +270,15 @@ int main()
                                     // printf("transmission ended\n");
                                     got_something = true;
                                     got_succexy = true;
-                                    LS_to_be_over = true;
+                                    data_stream_finished = true;
+                                }
+                                else if (response.type == ERROR)
+                                {
+                                    got_something = true;
+                                    got_succexy = true;
+                                    // printf("Got error message\n");
+                                    command_retval = *response.data;
+                                    error = true;
                                 }
                                 got_something = true;
                             }
@@ -310,11 +319,17 @@ int main()
 
                 // LS endend
 
-                if (LS_over){
+                if (error)
+                {
+                    printf("server sent error '%d'\n", command_retval);
+                }
+
+                if (command_finished){
                     printf("%s\n", huge_buffer);
                 }
                 else
-                    printf("ls failed.\n");
+                    printf("command failed.\n");
+                
 
             }
         }
