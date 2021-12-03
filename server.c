@@ -35,11 +35,16 @@ int parse_command_packet(packet_t* packet, int* type, char* data, int* data_size
     if (packet->type == LS)
     {
         printf("ls received\n");
+        int retval = ls_to_string(server_dir, huge_buffer);
 
-        if (ls_to_string(server_dir, huge_buffer) != SUCCEXY){
+        if (retval != SUCCEXY)
+        {
             printf("LS ERROR\n");
+            *data = retval;
+            *data_size = 1;
             return ERROR;
         }
+
         *type = LS;
         return LS;
     }
@@ -50,12 +55,15 @@ int parse_command_packet(packet_t* packet, int* type, char* data, int* data_size
         
         char path[STR_MAX];
         strcpy(path, packet->data);
-
-        if (indexed_cat(path, huge_buffer) != SUCCEXY){
+        int retval = indexed_cat(path, huge_buffer);
+        if (retval != SUCCEXY)
+        {
             printf("VER ERROR\n");
+            *data = retval;
+            *data_size = 1;
             return ERROR;
         }
-        printf("%s", huge_buffer);
+        printf("ver was successfull.\n");
         *type = VER;
         return VER;
     }
@@ -133,7 +141,10 @@ int main()
                     // execute command
                     int command_id = parse_command_packet(&request, &type, data, &data_size);
 
-                    if (command_id == CD)
+
+
+
+                    if ((command_id == CD) or (command_id == ERROR))
                     {
                         // set response packet once.
                         memset(response.data, 0, DATA_BYTES);
