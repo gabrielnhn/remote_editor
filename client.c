@@ -31,7 +31,7 @@ int parse_str_command(char* command, int* type, char* data, int* data_size)
         strcpy(data, command + 3);
         *data_size = strlen(command + 3) + 1;
         *type = 0;
-        return ONE_NIGHT_STAND;
+        return CD;
     }
     else if (strncmp(command, "lcd ", strlen("lcd ")) == 0)
     {
@@ -49,7 +49,7 @@ int parse_str_command(char* command, int* type, char* data, int* data_size)
     {
         *data_size = 0;
         *type = LS;
-        return STREAM;
+        return LS;
     }
     else if (strncmp(command, "lls", strlen("lls")) == 0)
     {
@@ -82,14 +82,8 @@ int main()
     request.origin_address = CLIENT;
 
     int socket = raw_socket_connection("lo");
-    // struct timeval tv;
-    // tv.tv_sec = 0.5;
-    // tv.tv_usec = 0;
-    // setsockopt(socket, SOL_SOCKET, SO_RCVTIMEO, (const char*)&tv, sizeof tv);
     
     get_realpath(".", client_dir);
-
-    // strcpy(client_dir, ".") ;
 
     char huge_buffer[A_LOT];
     int huge_buffer_counter = 0;
@@ -97,7 +91,7 @@ int main()
 
     char command[STR_MAX];
     int send_retval, recv_retval;
-    int command_type;
+    int command_id;
     int data_size;
     bool sent_succexy;
     bool got_succexy;
@@ -109,12 +103,12 @@ int main()
         ///////// GET COMMAND
         int type;
         char data[15];
-        command_type = parse_str_command(command, &type, data, &data_size);
+        command_id = parse_str_command(command, &type, data, &data_size);
         int command_retval;
 
-        if (command_type != NOP)
+        if (command_id != NOP)
         {
-            if (command_type == ONE_NIGHT_STAND)
+            if (command_id == CD)
             {
                 int counter = 0;
 
@@ -143,7 +137,6 @@ int main()
 
                     while (not got_something)
                     {
-                        // printf("try recv\n");
                         recv_retval = recv(socket,&packet_array, PACKET_MAX_BYTES, 0);
 
                         if (recv_retval != -1)
@@ -188,7 +181,7 @@ int main()
 
 
 
-            else if (command_type == STREAM)
+            else if (command_id == LS)
             {
                 strcpy(huge_buffer, "");
                 huge_buffer_counter = 0;
@@ -198,21 +191,17 @@ int main()
                 memcpy(request.data, data, data_size);
                 request.data_size = data_size;
                 request.type = type;
-                // request.packet_id = msg_counter;
-                // make_packet_array(packet_array, &request);
                 
                 // // send request
-                // printf("sending, type = %d\n", request.type);
-                // send_retval = send(socket, &packet_array, PACKET_MAX_BYTES, 0);
-                // if (send_retval == -1)
-                //     printf("Error: nothing was sent.\n");
+                if (send_retval == -1)
+                    printf("Error: nothing was sent.\n");
 
                 usleep(TIME_BETWEEN_TRIES);
 
                 bool request_validated = false;
 
-                bool stream_over = false;
-                while (not stream_over)
+                bool LS_over = false;
+                while (not LS_over)
                 {
                     // for every not final packet 
                     int counter = 0;
@@ -228,8 +217,7 @@ int main()
                         make_packet_array(packet_array, &request);
                         
                         // send packet
-                        printf("sending packet, id %d, type %d\n", request.packet_id, request.type);
-                        // print_packet(&request);
+                        // printf("sending packet, id %d, type %d\n", request.packet_id, request.type);
                         send_retval = send(socket, &packet_array, PACKET_MAX_BYTES, 0);
                         if (send_retval == -1)
                             printf("Error: nothing was sent.\n");
@@ -246,13 +234,7 @@ int main()
                             recv_retval = recv(socket,&packet_array, PACKET_MAX_BYTES, 0);
 
                             if (recv_retval != -1){
-                                // printf("got something bruh, ");
                                 get_packet_from_array(packet_array, &response);
-                                // if (response.origin_address == SERVER)
-                                //     printf("        from the server\n");
-                                // else
-                                //     printf("        from myself LUL\n");
-
                             }
 
                             // check response
@@ -262,7 +244,7 @@ int main()
                                 // REAL PACKAGE!!!!
                                 if (response.type == LS_CONTENT)
                                 {
-                                    printf("Got content: '%s'\n", response.data);
+                                    // printf("Got content: '%s'\n", response.data);
                                     strcat(huge_buffer, response.data);
                                     got_something = true;
                                     got_succexy = true;
@@ -275,15 +257,10 @@ int main()
                                 }
                                 else if (response.type == END)
                                 {
-                                    printf("transmission ended\n");
+                                    // printf("transmission ended\n");
                                     got_something = true;
                                     got_succexy = true;
-                                    stream_over = true;
-                                }
-                                else{
-                                    printf("Still nothing. wrong type == %d\n", response.type);
-                                    // print_packet(&response);
-                                    printf("\n");
+                                    LS_over = true;
                                 }
                                 got_something = true;
                             }
@@ -293,7 +270,7 @@ int main()
                                 if (recv_retval != -1)
                                 {
                                     if (response.origin_address == SERVER){
-                                        printf("Didnt want %d. wanted %d\n", response.packet_id, (msg_counter + 1) % 16);
+                                        // printf("Didnt want %d. wanted %d\n", response.packet_id, (msg_counter + 1) % 16);
                                         // print_packet(&response);
                                         // printf("\n");
                                     }
@@ -329,7 +306,7 @@ int main()
                     }
                 }
                 // huge_buffer[huge_buffer_counter] = "\0";
-                printf("ls: %s\n", huge_buffer);
+                printf("ls:\n%s\n", huge_buffer);
             }
         }
     }
