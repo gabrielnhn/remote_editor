@@ -4,7 +4,7 @@
 #include "bitwise.h"
 #include <stdbool.h>
 
-#define DATA_BYTES 16
+#define DATA_BYTES 15
 #define PACKET_MAX_BYTES (6 + DATA_BYTES)
 #define HEADER 0b01111110
 #define SERVER 0b10

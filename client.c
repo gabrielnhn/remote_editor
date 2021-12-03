@@ -298,13 +298,7 @@ int main()
                             type = ACK;
                         }
                     }
-
-                    if (got_succexy)
-                    {
-
-                    }
                 }
-                // print ls buffer
                 printf("%s\n", huge_buffer);
             }
         }
