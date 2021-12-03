@@ -29,7 +29,6 @@
 #define END 0b1101
 
 
-
 typedef struct{
     unsigned char header;
     unsigned char origin_address;

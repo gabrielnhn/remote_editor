@@ -3,13 +3,17 @@
 
 bool valid_packet(packet_t* packet, int id)
 {
-    if (packet->header != HEADER)
+    if (packet->header != HEADER){
+        // printf("header........\n");
         return false;
+    }
 
-    if (get_parity(packet) != packet->parity)
+    if (get_parity(packet) != packet->parity){
+        // printf("parity........\n");
         return false;
-
+    }
     if (packet->packet_id != id){
+        // printf("id........\n");
         return false;
     }
 

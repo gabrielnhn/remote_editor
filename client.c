@@ -8,12 +8,11 @@
 #define STR_MAX 100
 
 char client_dir[STR_MAX];
-char trash[STR_MAX];
-
+int msg_counter = 0;
 
 int parse_str_command(char* command)
 {
-    printf("client@%s : ", client_dir);
+    printf("client[%d]@%s : ", msg_counter, client_dir);
     char* fgets_retval = fgets(command, STR_MAX, stdin);
     
     if (fgets_retval == NULL)
@@ -94,8 +93,6 @@ int main()
     bool sent_succexy;
     bool got_succexy;
 
-    int msg_counter = 0;
-
     while(1)
     {
         //  GET COMMAND
@@ -159,9 +156,13 @@ int main()
                         }
                         else
                         {
-                            // printf("bruh\n");
-                            if (response.header == SERVER)
+                            printf("bruh %d %d %d\n", (recv_retval != -1), valid_packet(&response, (msg_counter + 1) % 16),
+                             response.origin_address == SERVER);
+
+                            if (response.origin_address == SERVER){
                                 printf("Got %d, wanted %d\n", response.packet_id, (msg_counter + 1) % 16);
+                                // print_packet(&response);
+                            }
 
                             local_counter++;
                             if (local_counter > MAX_RECEIVE_TRIES)
@@ -176,7 +177,7 @@ int main()
                 if (sent_succexy)
                 {
                     msg_counter = (msg_counter + 2) % 16;
-                    printf("counter: %d\n", msg_counter);
+                    // printf("counter: %d\n", msg_counter);
 
                     
                     printf("retval: %d\n", command_retval);
@@ -321,7 +322,7 @@ int main()
                         {
                             // printf("msg %d tbo %d\n", msg_counter, LS_to_be_over);
                             msg_counter = (msg_counter + 2) % 16;
-                            printf("counter: %d\n", msg_counter);
+                            // printf("counter: %d\n", msg_counter);
                             type = ACK;
                         }
                     }

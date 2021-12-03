@@ -35,7 +35,7 @@ int parse_command_packet(packet_t* packet, int* type, char* data, int* data_size
     if (packet->type == LS)
     {
         printf("ls received\n");
-        print_packet(packet);
+        // print_packet(packet);
 
         if (ls_to_string(server_dir, huge_buffer) != SUCCEXY){
             printf("LS ERROR\n");
@@ -122,9 +122,8 @@ int main()
                         response.packet_id = msg_counter;
                         printf("Sending retval = %d with msg %d \n", *response.data, msg_counter);
                         // printf("response id %d\n", response.packet_id);
-
+                        // print_packet(&response);
                         make_packet_array(packet_array, &response);
-
 
                         // send response
                         send_retval = send(socket, &packet_array, PACKET_MAX_BYTES, 0);
@@ -248,7 +247,11 @@ int main()
                             response.packet_id = msg_counter;
                             response.data_size = 0;
                             make_packet_array(packet_array, &response);
+                            printf("Sent END\n");
                             send_retval = send(socket, &packet_array, PACKET_MAX_BYTES, 0);
+
+                            usleep(TIME_BETWEEN_TRIES);
+
 
                             bool got_something = false;
                             int local_counter = 0;
@@ -299,6 +302,7 @@ int main()
                         printf("resending message %d\n", previous_id + 1);
                         // resend response
                         response.packet_id = previous_id + 1;
+                        // print_packet(&response);
                         make_packet_array(packet_array, &response);
                         send_retval = send(socket, &packet_array, PACKET_MAX_BYTES, 0);
                         if (send_retval == -1)
