@@ -280,7 +280,6 @@ int main()
                         }
                     }
                 }
-                printf("COMMAND ID:::: %d\n", command_id);
             }
 
 
@@ -288,13 +287,16 @@ int main()
             if ((command_id == LS) or (command_id == VER) or (command_id == LINHA))
             {
                 int type_of_response;
+                bool request_validated = false; // LS command was acknowledged
+
                 // set request packet
                 if (command_id == LS)
                 {
                     type_of_response = LS_CONTENT;
                     data_size = 0;
                     memset(request.data, 0, DATA_BYTES);
-                    data_size = 0;
+                    type = command_id;
+                    request.type = type;
                 }
                 else if (command_id == VER)
                 {
@@ -303,20 +305,21 @@ int main()
                     strcpy(request.data, command + 4);
                     data_size = strlen(command + 4);
                     // printf("ver arg: %s\n", request.data);
+                    type = command_id;
+                    request.type = type;
                 }
                 else if (command_id == LINHA)
                 {
+                    memset(request.data, 0, DATA_BYTES);
                     type_of_response = FILE_CONTENT;
-                    printf("TAPORRA T\n");
+                    type = ACK;
+                    request_validated = true;
+                    data_size = 0;
+                    // printf("TAPORRA\n");
                 }
-                
-                type = command_id;
-                request.type = type;
-                
                 
                 strcpy(huge_buffer, "");
 
-                bool request_validated = false; // LS command was acknowledged
                 bool command_finished = false; // should end
                 bool data_stream_finished = false; // should end after this iteration
                 bool error = false;
@@ -356,7 +359,7 @@ int main()
                                and not data_stream_finished)
                         // if data_stream_finished, client won't receive LS_CONTENT anymore.
                         {
-                            // printf("try recv\n");
+
                             recv_retval = recv(socket,&packet_array, PACKET_MAX_BYTES, 0);
 
                             if (recv_retval != -1){
@@ -373,7 +376,7 @@ int main()
                                 if (response.type == type_of_response)
                                 {
                                     request_validated = true;
-                                    // printf("Got content: '%s'\n", response.data);
+                                    printf("Got content: '%s'\n", response.data);
                                     strcat(huge_buffer, response.data);
                                     got_something = true;
                                     got_succexy = true;
@@ -393,6 +396,8 @@ int main()
                                     command_retval = *response.data;
                                     error = true;
                                 }
+                                else
+                                    printf("Got unexpected type %d\n", response.type);
                                 got_something = true;
                             }
                             // timeout
@@ -401,7 +406,7 @@ int main()
                                 if (recv_retval != -1)
                                 {
                                     if (response.origin_address == SERVER){
-                                        // printf("Didnt want %d. wanted %d\n", response.packet_id, (msg_counter + 1) % 16);
+                                        printf("Didnt want %d. wanted %d\n", response.packet_id, (msg_counter + 1) % 16);
                                         // print_packet(&response);
                                         // printf("\n");
                                     }

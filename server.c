@@ -275,6 +275,7 @@ int main()
                             printf("get_line worked\n");
                             type = FILE_CONTENT;
                             command_id = LINHA;
+                            msg_counter = (msg_counter + 1) % 16;
                         }
                         else
                         {
@@ -314,9 +315,8 @@ int main()
                     }
                     
 
-                    // LS LS LS OR VER
+                    // LS LS LS OR VER OR LINHA
 
-                    printf("WUT1\n\n");
                     if ((command_id == LS) or (command_id == VER) or (command_id == LINHA))
                     {
                         printf("WUT2\n\n");
@@ -326,10 +326,12 @@ int main()
                         huge_buffer_counter = 0;
                         int length = strlen(huge_buffer);
 
+
                         msg_counter = (msg_counter + 1) % 16;
 
                         bool sent_succexy = true;
                         printf("Starting transmission:\n");
+
                         while(huge_buffer_counter < length)
                         {
                             if (sent_succexy)
@@ -340,6 +342,7 @@ int main()
                                 memset(response.data, 0, DATA_BYTES);
                                 strncpy(response.data, huge_buffer + huge_buffer_counter, 14);
                                 // printf("sending response.data: '%s'\n", response.data);
+                                // print_packet
 
                                 huge_buffer_counter += strlen(response.data);
                                 // printf("counter: %d < %d\n", huge_buffer_counter, length);
@@ -354,7 +357,7 @@ int main()
                             }
 
                             // send response
-                            // printf("Sending packet, id %d, i%d/%d\n", response.packet_id, huge_buffer_counter, length);
+                            printf("Sending packet, id %d, i%d/%d\n", response.packet_id, huge_buffer_counter, length);
                             send_retval = send(socket, &packet_array, PACKET_MAX_BYTES, 0);
 
                             if (send_retval == -1)
@@ -409,6 +412,10 @@ int main()
                                 }
                                 else
                                 {
+                                    if ((recv_retval != -1) and request.origin_address == CLIENT){
+                                        printf("Didnt want %d. wanted %d\n", request.packet_id, (msg_counter + 1) % 16);
+                                        // print_packet(&request);
+                                    }
                                     recv_counter++;
                                 }
                                 if (sent_succexy)
