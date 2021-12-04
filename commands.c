@@ -259,6 +259,71 @@ int get_lines(const char* path, int line1, int line2, char* destination)
     return retval;
 }
 
+int edit(const char* path, int index, const char* new_line, char* buffer)
+{
+    FILE *f;
+    int i;
+    int retval = SUCCEXY;
+
+    // abre o arquivo em leitura e escrita
+    f = fopen (path, "r+") ;
+    if (f == NULL)
+    {
+        if (errno == EACCES)
+            retval =  FILE_DOES_NOT_EXIST;
+        else
+            retval =  FORBIDDEN;
+    }
+    if (retval != SUCCEXY)
+    {
+        printf("'%s' reading failed\n", path);
+        return retval;
+    }
+
+    strcpy(buffer, "");
+
+    bool edited = false;
+
+    // read the whole file
+    i = 1 ;
+    char line[STR_MAX];
+    fgets (line, STR_MAX, f);
+    while (not feof (f))
+    {
+        if (i == index)
+        {
+            strcat(buffer, new_line);
+            edited = true;
+        }
+        else
+        {
+            strcat(buffer, line);
+        }
+
+        fgets (line, STR_MAX, f);   // tenta ler a próxima linha
+        i++;
+    }
+
+    if (i == index)
+    {
+        strcat(buffer, new_line);
+        edited = true;
+    }
+    fclose (f); // stop reading
+
+    if (edited)
+    {
+        f = fopen(path, "w");
+        fputs(buffer, f); // fill it with buffered content
+        fclose(f);
+        return SUCCEXY;
+    }
+    else
+        return LINE_DOES_NOT_EXIST;
+
+}
+
+
 // int main()
 // {
 //     ls(".");
