@@ -272,18 +272,18 @@ int main()
                                 data_size = 1;
                             }
 
-
+                            printf("get_line worked\n");
+                            type = FILE_CONTENT;
+                            command_id = LINHA;
                         }
                         else
                         {
                             printf("Failed to get LINHA\n\n\n");
                             command_id = NOP;
                         }
-
-
                     }
-                            //else:
-                            //    as command_id is still LINHA, we will still send the contents of huge_buffer.
+                    //else:
+                    //    as command_id is still LINHA, we will still send the contents of huge_buffer.
 
 
                     if ((command_id == CD) or (command_id == ERROR))
@@ -316,10 +316,10 @@ int main()
 
                     // LS LS LS OR VER
 
-
-
+                    printf("WUT1\n\n");
                     if ((command_id == LS) or (command_id == VER) or (command_id == LINHA))
                     {
+                        printf("WUT2\n\n");
                         // Now it gets tricky.
                         // huge_buffer has LS output.
 
@@ -329,7 +329,7 @@ int main()
                         msg_counter = (msg_counter + 1) % 16;
 
                         bool sent_succexy = true;
-                        printf("Starting transmission:");
+                        printf("Starting transmission:\n");
                         while(huge_buffer_counter < length)
                         {
                             if (sent_succexy)

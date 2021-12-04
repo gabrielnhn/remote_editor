@@ -254,7 +254,10 @@ int main()
                             else if (response.type == ACK)
                             {
                                 printf("GOT ACK\n");
-                                sent_linha = true;
+                                if (sent_linha)
+                                    sent_query = true;
+                                else
+                                    sent_linha = true;
                                 got_something = true;
                                 msg_counter = (msg_counter + 2) % 16;
                             }
@@ -268,7 +271,7 @@ int main()
                             if (recv_retval != -1)
                             {
                                 if (response.origin_address == SERVER){
-                                    printf("Didnt want %d. wanted %d\n", response.packet_id, (msg_counter + 1) % 16);
+                                    // printf("Didnt want %d. wanted %d\n", response.packet_id, (msg_counter + 1) % 16);
                                     // printf("RECEIVED WRONG?:\n");
                                     // print_packet(&response);
                                 }
@@ -277,16 +280,12 @@ int main()
                         }
                     }
                 }
-
-
-
-
-                // receive ACK
+                printf("COMMAND ID:::: %d\n", command_id);
             }
 
 
 
-            else if ((command_id == LS) or (command_id == VER))
+            if ((command_id == LS) or (command_id == VER) or (command_id == LINHA))
             {
                 int type_of_response;
                 // set request packet
@@ -304,6 +303,11 @@ int main()
                     strcpy(request.data, command + 4);
                     data_size = strlen(command + 4);
                     // printf("ver arg: %s\n", request.data);
+                }
+                else if (command_id == LINHA)
+                {
+                    type_of_response = FILE_CONTENT;
+                    printf("TAPORRA T\n");
                 }
                 
                 type = command_id;
@@ -426,7 +430,7 @@ int main()
                     }
                 }
 
-                // LS endend
+                // Command endend
 
                 if (error)
                 {
