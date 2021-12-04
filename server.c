@@ -170,16 +170,19 @@ int main()
                         // we'll treat this and then use the foundations below this clause.
 
                         bool got_lines_query = false;
+                        bool should_end = false;
                         msg_counter = (msg_counter + 1) % 16;
 
                         int send_counter = 0;
-                        while (not got_lines_query and send_counter < MAX_SEND_TRIES)
+                        while ((not should_end) and (send_counter < MAX_SEND_TRIES))
                         {
+                            if (got_lines_query)
+                                should_end = true;
                             // set ACK response
 
                             memset(response.data, 0, DATA_BYTES);
-                            memcpy(response.data, data, data_size);
-                            response.data_size = data_size;
+                            // memcpy(response.data, data, data_size);
+                            response.data_size = 0;
                             response.type = type;
                             response.packet_id = msg_counter;
                             make_packet_array(packet_array, &response);
@@ -189,9 +192,10 @@ int main()
                             // printf("\n");
 
                             // printf("Sending retval=%d on msg %d \n", *response.data, msg_counter);
-                            // printf("response id %d\n", response.packet_id);
 
                             // send response
+                            printf("Sending type %d id %d\n", response.type, response.packet_id);
+                            // print_packet(&response);
                             send_retval = send(socket, &packet_array, PACKET_MAX_BYTES, 0);
                             if (send_retval == -1)
                                 printf("Could not send response.\n");
@@ -199,35 +203,36 @@ int main()
                             usleep(TIME_BETWEEN_TRIES);
 
                             // try to receive LINHAS_INDEXES from client
-                            int type_of_response = LINHAS_INDEXES;
+                            int type_of_request = LINHAS_INDEXES;
                             bool got_something = false;
                             int recv_counter = 0;
 
-                            while (not got_something and (recv_counter < MAX_RECEIVE_TRIES))
+                            while (not got_lines_query and not got_something and (recv_counter < MAX_RECEIVE_TRIES))
                             // if data_stream_finished, client won't receive LS_CONTENT anymore.
                             {
                                 // printf("try recv\n");
                                 recv_retval = recv(socket,&packet_array, PACKET_MAX_BYTES, 0);
 
                                 if (recv_retval != -1){
-                                    get_packet_from_array(packet_array, &response);
+                                    get_packet_from_array(packet_array, &request);
                                 }
                                 else
                                     memset(packet_array, 0, PACKET_MAX_BYTES);
 
-                                // check response
-                                if ((recv_retval != -1) and valid_packet(&response, (msg_counter + 1) % 16)
-                                    and response.origin_address == CLIENT)
+                                // check request
+                                if ((recv_retval != -1) and valid_packet(&request, (msg_counter + 1) % 16)
+                                    and request.origin_address == CLIENT)
                                 {
                                     // REAL PACKAGE!!!!
-                                    if (response.type == type_of_response)
+                                    if (request.type == type_of_request)
                                     {
-                                        printf("Got line: '%d'\n", *response.data);
-                                        line1 = *response.data; 
+                                        printf("Got line: '%d'\n", *request.data);
+                                        line1 = *request.data; 
                                         got_something = true;
                                         got_lines_query = true;
+                                        msg_counter = (msg_counter + 2) % 16;
                                     }
-                                    else if (response.type == command_id)
+                                    else if (request.type == command_id)
                                     {
                                         got_something = true;
                                     }
@@ -239,9 +244,9 @@ int main()
                                 {
                                     if (recv_retval != -1)
                                     {
-                                        if (response.origin_address == CLIENT){
-                                            // printf("Didnt want %d. wanted %d\n", response.packet_id, (msg_counter + 1) % 16);
-                                            // print_packet(&response);
+                                        if (request.origin_address == CLIENT){
+                                            printf("Didnt want %d. wanted %d\n", request.packet_id, (msg_counter + 1) % 16);
+                                            // print_packet(&request);
                                             // printf("\n");
                                         }
                                     }
@@ -253,6 +258,7 @@ int main()
 
                         if (got_lines_query)
                         {
+                            printf("GOT FUCKING LINE\n");
                             char path[STR_MAX];
                             strcpy(path, huge_buffer);
                             int retval = get_line(path, line1, huge_buffer);
@@ -265,13 +271,19 @@ int main()
                                 *data = retval;
                                 data_size = 1;
                             }
-                            //else:
-                            //    as command_id is still LINHA, we will still send the contents of huge_buffer.
 
+
+                        }
+                        else
+                        {
+                            printf("Failed to get LINHA\n\n\n");
+                            command_id = NOP;
                         }
 
 
                     }
+                            //else:
+                            //    as command_id is still LINHA, we will still send the contents of huge_buffer.
 
 
                     if ((command_id == CD) or (command_id == ERROR))

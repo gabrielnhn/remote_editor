@@ -7,8 +7,11 @@
 
 #define STR_MAX 100
 
+char huge_buffer[A_LOT];
+
 char client_dir[STR_MAX];
 int msg_counter = 0;
+int linha1, linha2;
 
 int parse_str_command(char* command)
 {
@@ -48,6 +51,12 @@ int parse_str_command(char* command)
         ls(client_dir);
         return NOP; // local operation.
     }
+    else if (strncmp(command, "linha", strlen("linha")) == 0)
+    {
+        sscanf(command + 6, "%d %s", &linha1, huge_buffer);
+        return LINHA; // local operation.
+    }
+
     else if (strncmp(command, "\n", strlen("\n")) == 0)
     // newline
     {
@@ -75,8 +84,6 @@ int main()
     int socket = raw_socket_connection("lo");
     
     get_realpath(".", client_dir);
-
-    char huge_buffer[A_LOT];
 
     char command[STR_MAX];
     int send_retval, recv_retval;
@@ -176,9 +183,108 @@ int main()
                     printf("Command was not received by server.\n");
                 }
             }
-
-
             // LS LS OR VER
+
+            if (command_id == LINHA)
+            {
+                // send LINHA
+
+                bool sent_linha = false;
+                bool sent_query = false;
+                while((not sent_linha) or (not sent_query))
+                {
+                    if (not sent_linha)
+                    {
+                        printf("Sending linha\n");
+                        // Set LINHA packet
+                        memset(request.data, 0, DATA_BYTES);
+                        strncpy(request.data, huge_buffer, 14);
+                        request.data_size = strlen(request.data) + 1;
+                        request.type = LINHA;
+
+                        request.packet_id = msg_counter;
+                        // printf("counter: %d < %d\n", huge_buffer_counter, length);
+                        make_packet_array(packet_array, &request);
+                    }
+                    else
+                    {
+                        printf("Sending linhas_indexes\n");
+                        // Set LINHAS_INDEXES PACKET
+                        *request.data = linha1;
+                        request.data_size = 1;
+                        request.type = LINHAS_INDEXES;
+                        request.packet_id = msg_counter;
+                        // printf("counter: %d < %d\n", huge_buffer_counter, length);
+                        make_packet_array(packet_array, &request);
+                    }
+                    
+                    // send request
+                    // printf("Sending packet, id %d, i%d/%d\n", request.packet_id, huge_buffer_counter, length);
+                    send_retval = send(socket, &packet_array, PACKET_MAX_BYTES, 0);
+
+                    if (send_retval == -1)
+                        printf("Could not send LINHA\n");
+
+                    usleep(TIME_BETWEEN_TRIES);
+                    
+                    // get acknowledgement FROM SERVER
+                    bool got_something = false;
+                    int recv_counter = 0;
+
+                    while (not got_something and (recv_counter < MAX_RECEIVE_TRIES))
+                    {
+                        recv_retval = recv(socket,&packet_array, PACKET_MAX_BYTES, 0);
+
+                        if (recv_retval != -1)
+                            get_packet_from_array(packet_array, &response);
+                        else
+                            memset(packet_array, 0, PACKET_MAX_BYTES);
+                        
+                        // check response
+                        if ((recv_retval != -1) and (valid_packet(&response, (msg_counter + 1) % 16))
+                            and response.origin_address == SERVER)
+                        {
+                            // printf("Got %d\n", response.packet_id);
+                            // REAL PACKAGE!!!!
+
+                            if (response.type == NACK)
+                            {
+                                got_something = true;
+                            }
+                            else if (response.type == ACK)
+                            {
+                                printf("GOT ACK\n");
+                                sent_linha = true;
+                                got_something = true;
+                                msg_counter = (msg_counter + 2) % 16;
+                            }
+                            else
+                                printf("Got something completely unexpected, type %d\n", response.type);
+                            
+                            got_something = true;
+                        }
+                        else
+                        {
+                            if (recv_retval != -1)
+                            {
+                                if (response.origin_address == SERVER){
+                                    printf("Didnt want %d. wanted %d\n", response.packet_id, (msg_counter + 1) % 16);
+                                    // printf("RECEIVED WRONG?:\n");
+                                    // print_packet(&response);
+                                }
+                            }
+                            recv_counter++;
+                        }
+                    }
+                }
+
+
+
+
+                // receive ACK
+            }
+
+
 
             else if ((command_id == LS) or (command_id == VER))
             {
