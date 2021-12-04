@@ -208,6 +208,57 @@ int get_line(const char* path, int line_index, char* destination)
     return retval;
 }
 
+int get_lines(const char* path, int line1, int line2, char* destination)
+{
+    FILE *f;
+    int i;
+    int retval = SUCCEXY;
+
+    // abre o arquivo em leitura
+    f = fopen (path, "r") ;
+    if (f == NULL)
+    {
+        if (errno == EACCES)
+            retval =  FILE_DOES_NOT_EXIST;
+        else
+            retval =  FORBIDDEN;
+    }
+    if (retval != SUCCEXY)
+    {
+        printf("'%s' reading failed\n", path);
+        return retval;
+    }
+
+    char line[STR_MAX];
+    strcpy(destination, "");
+
+    // lê TODAS as linhas do arquivo
+    i = 1 ;
+    fgets (line, STR_MAX, f);
+    while (not feof (f) and i < line1)
+    {
+        fgets (line, STR_MAX, f) ;   // tenta ler a próxima linha
+        i++ ;
+    }
+
+    while (not feof (f) and i < line2)
+    {
+        strcat(destination, line);
+        fgets (line, STR_MAX, f) ;   // tenta ler a próxima linha
+        i++ ;
+    }
+
+    if (feof(f))
+    {
+        retval = LINE_DOES_NOT_EXIST;
+    }
+
+    // fecha o arquivo
+    fclose (f) ;
+
+    return retval;
+}
+
 // int main()
 // {
 //     ls(".");

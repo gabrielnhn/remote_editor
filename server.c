@@ -88,6 +88,25 @@ int parse_command_packet(packet_t* packet, int* type, char* data, int* data_size
         *type = ACK;
         return LINHA;
     }
+
+    if (packet->type == LINHAS)
+    {
+        printf("LINHAS received\n");
+        
+        strcpy(huge_buffer, packet->data);
+        int retval = check_filename(huge_buffer);
+        if (retval != SUCCEXY)
+        {
+            printf("LINHAS ERROR\n");
+            *data = retval;
+            *type = ERROR;
+            *data_size = 1;
+            return ERROR;
+        }
+        printf("linhas has valid filename.\n");
+        *type = ACK;
+        return LINHAS;
+    }
     
 
     return NOP;
@@ -164,7 +183,7 @@ int main()
 
                     int line1, line2;
 
-                    if (command_id == LINHA)
+                    if ((command_id == LINHA) or (command_id == LINHAS))
                     {
                         // LINHA has a different overhead when compared to other commands.
                         // we'll treat this and then use the foundations below this clause.
@@ -181,7 +200,6 @@ int main()
                             // set ACK response
 
                             memset(response.data, 0, DATA_BYTES);
-                            // memcpy(response.data, data, data_size);
                             response.data_size = 0;
                             response.type = type;
                             response.packet_id = msg_counter;
@@ -227,7 +245,15 @@ int main()
                                     if (request.type == type_of_request)
                                     {
                                         // printf("Got line: '%d'\n", *request.data);
-                                        line1 = *request.data; 
+                                        if (command_id == LINHA)
+                                        {
+                                            line1 = *request.data; 
+                                        }
+                                        else
+                                        {
+                                            line1 = *request.data;
+                                            line2 = *(request.data + sizeof(line1));
+                                        }
                                         got_something = true;
                                         got_lines_query = true;
                                         msg_counter = (msg_counter + 2) % 16;
@@ -260,10 +286,17 @@ int main()
                         {
                             char path[STR_MAX];
                             strcpy(path, huge_buffer);
-                            int retval = get_line(path, line1, huge_buffer);
+
+                            int retval;
+                            if (command_id == LINHA)
+                                retval = get_line(path, line1, huge_buffer);
+                            else
+                                retval = get_lines(path, line1, line2, huge_buffer);
+
                             if (retval != SUCCEXY)
+                            // didnt work
                             {
-                                printf("LINHA failed\n");
+                                printf("command failed\n");
                                 // error, use next case to send it
                                 command_id = ERROR;
                                 type = ERROR;
@@ -276,13 +309,13 @@ int main()
                             {
                                 // printf("get_line worked\n");
                                 type = FILE_CONTENT;
-                                command_id = LINHA;
+                                // command_id = LINHA;
                                 msg_counter = (msg_counter + 1) % 16;
                             }
                         }
                         else
                         {
-                            printf("Failed to get LINHA\n\n\n");
+                            printf("Failed to get LINHAS_INDEXES\n\n\n");
                             command_id = NOP;
                         }
                     }
@@ -320,7 +353,7 @@ int main()
 
                     // LS LS LS OR VER OR LINHA
 
-                    if ((command_id == LS) or (command_id == VER) or (command_id == LINHA))
+                    if ((command_id == LS) or (command_id == VER) or (command_id == LINHA) or (command_id == LINHAS))
                     {
                         // Now it gets tricky.
                         // huge_buffer has LS output.

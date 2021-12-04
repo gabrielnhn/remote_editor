@@ -31,5 +31,6 @@ int check_filename(const char* path);
 
 int get_line(const char* path, int line_index, char* destination);
 
+int get_lines(const char* path, int line1, int line2, char* destination);
 
 #endif

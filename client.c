@@ -51,10 +51,16 @@ int parse_str_command(char* command)
         ls(client_dir);
         return NOP; // local operation.
     }
-    else if (strncmp(command, "linha", strlen("linha")) == 0)
+    else if (strncmp(command, "linha ", strlen("linha ")) == 0)
     {
         sscanf(command + 6, "%d %s", &linha1, huge_buffer);
         return LINHA; // local operation.
+    }
+
+    else if (strncmp(command, "linhas ", strlen("linhas ")) == 0)
+    {
+        sscanf(command + 7, "%d %d %s", &linha1, &linha2, huge_buffer);
+        return LINHAS; // local operation.
     }
 
     else if (strncmp(command, "\n", strlen("\n")) == 0)
@@ -185,7 +191,7 @@ int main()
             }
             // LS LS OR VER
 
-            if (command_id == LINHA)
+            if ((command_id == LINHA) or (command_id == LINHAS))
             {
                 // send LINHA
 
@@ -200,7 +206,11 @@ int main()
                         memset(request.data, 0, DATA_BYTES);
                         strncpy(request.data, huge_buffer, 14);
                         request.data_size = strlen(request.data) + 1;
-                        request.type = LINHA;
+
+                        if (command_id == LINHA)
+                            request.type = LINHA;
+                        else
+                            request.type = LINHAS;
 
                         request.packet_id = msg_counter;
                         // printf("counter: %d < %d\n", huge_buffer_counter, length);
@@ -210,9 +220,19 @@ int main()
                     {
                         // printf("Sending linhas_indexes\n");
                         // Set LINHAS_INDEXES PACKET
-                        *request.data = linha1;
-                        request.data_size = 1;
-                        request.type = LINHAS_INDEXES;
+                        if (command_id == LINHA)
+                        {
+                            *request.data = linha1;
+                            request.data_size = sizeof(linha1);
+                            request.type = LINHAS_INDEXES;
+                        }
+                        else
+                        {
+                            *request.data = linha1;
+                            *(request.data + sizeof(linha1)) = linha2;
+                            request.data_size = sizeof(linha1) + sizeof(linha2);
+                            request.type = LINHAS_INDEXES;
+                        }
                         request.packet_id = msg_counter;
                         // printf("counter: %d < %d\n", huge_buffer_counter, length);
                         make_packet_array(packet_array, &request);
@@ -223,7 +243,7 @@ int main()
                     send_retval = send(socket, &packet_array, PACKET_MAX_BYTES, 0);
 
                     if (send_retval == -1)
-                        printf("Could not send LINHA\n");
+                        printf("Could not send LINHA(S)\n");
 
                     usleep(TIME_BETWEEN_TRIES);
                     
@@ -284,7 +304,7 @@ int main()
 
 
 
-            if ((command_id == LS) or (command_id == VER) or (command_id == LINHA))
+            if ((command_id == LS) or (command_id == VER) or (command_id == LINHA) or (command_id == LINHAS))
             {
                 int type_of_response;
                 bool request_validated = false; // LS command was acknowledged
@@ -308,14 +328,13 @@ int main()
                     type = command_id;
                     request.type = type;
                 }
-                else if (command_id == LINHA)
+                else if ((command_id == LINHA) or (command_id == LINHAS))
                 {
                     memset(request.data, 0, DATA_BYTES);
                     type_of_response = FILE_CONTENT;
                     type = ACK;
                     request_validated = true;
                     data_size = 0;
-                    // printf("TAPORRA\n");
                 }
                 
                 strcpy(huge_buffer, "");
