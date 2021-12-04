@@ -195,7 +195,7 @@ int main()
                 {
                     if (not sent_linha)
                     {
-                        printf("Sending linha\n");
+                        // printf("Sending linha\n");
                         // Set LINHA packet
                         memset(request.data, 0, DATA_BYTES);
                         strncpy(request.data, huge_buffer, 14);
@@ -208,7 +208,7 @@ int main()
                     }
                     else
                     {
-                        printf("Sending linhas_indexes\n");
+                        // printf("Sending linhas_indexes\n");
                         // Set LINHAS_INDEXES PACKET
                         *request.data = linha1;
                         request.data_size = 1;
@@ -253,7 +253,7 @@ int main()
                             }
                             else if (response.type == ACK)
                             {
-                                printf("GOT ACK\n");
+                                // printf("GOT ACK\n");
                                 if (sent_linha)
                                     sent_query = true;
                                 else
@@ -392,7 +392,7 @@ int main()
                                 {
                                     got_something = true;
                                     got_succexy = true;
-                                    // printf("Got error message\n");
+                                    printf("Got error message\n");
                                     command_retval = *response.data;
                                     error = true;
                                 }

@@ -258,24 +258,27 @@ int main()
 
                         if (got_lines_query)
                         {
-                            printf("GOT FUCKING LINE\n");
                             char path[STR_MAX];
                             strcpy(path, huge_buffer);
                             int retval = get_line(path, line1, huge_buffer);
                             if (retval != SUCCEXY)
                             {
-                                printf("LINHA failed");
+                                printf("LINHA failed\n");
                                 // error, use next case to send it
                                 command_id = ERROR;
                                 type = ERROR;
                                 *data = retval;
                                 data_size = 1;
-                            }
+                                msg_counter = (msg_counter + 1) % 16;
 
-                            printf("get_line worked\n");
-                            type = FILE_CONTENT;
-                            command_id = LINHA;
-                            msg_counter = (msg_counter + 1) % 16;
+                            }
+                            else
+                            {
+                                printf("get_line worked\n");
+                                type = FILE_CONTENT;
+                                command_id = LINHA;
+                                msg_counter = (msg_counter + 1) % 16;
+                            }
                         }
                         else
                         {
@@ -294,9 +297,9 @@ int main()
                         memcpy(response.data, data, data_size);
                         response.data_size = data_size;
                         response.type = type;
-                        printf("response type:");
-                        print_bits(1, &response.type);
-                        printf("\n");
+                        // printf("response type:");
+                        // print_bits(1, &response.type);
+                        // printf("\n");
 
                         msg_counter = (msg_counter + 1) % 16;
                         response.packet_id = msg_counter;
