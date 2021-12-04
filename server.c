@@ -194,7 +194,7 @@ int main()
                             // printf("Sending retval=%d on msg %d \n", *response.data, msg_counter);
 
                             // send response
-                            printf("Sending type %d id %d\n", response.type, response.packet_id);
+                            // printf("Sending type %d id %d\n", response.type, response.packet_id);
                             // print_packet(&response);
                             send_retval = send(socket, &packet_array, PACKET_MAX_BYTES, 0);
                             if (send_retval == -1)
@@ -226,7 +226,7 @@ int main()
                                     // REAL PACKAGE!!!!
                                     if (request.type == type_of_request)
                                     {
-                                        printf("Got line: '%d'\n", *request.data);
+                                        // printf("Got line: '%d'\n", *request.data);
                                         line1 = *request.data; 
                                         got_something = true;
                                         got_lines_query = true;
@@ -274,7 +274,7 @@ int main()
                             }
                             else
                             {
-                                printf("get_line worked\n");
+                                // printf("get_line worked\n");
                                 type = FILE_CONTENT;
                                 command_id = LINHA;
                                 msg_counter = (msg_counter + 1) % 16;
@@ -322,7 +322,6 @@ int main()
 
                     if ((command_id == LS) or (command_id == VER) or (command_id == LINHA))
                     {
-                        printf("WUT2\n\n");
                         // Now it gets tricky.
                         // huge_buffer has LS output.
 
@@ -360,7 +359,7 @@ int main()
                             }
 
                             // send response
-                            printf("Sending packet, id %d, i%d/%d\n", response.packet_id, huge_buffer_counter, length);
+                            // printf("Sending packet, id %d, i%d/%d\n", response.packet_id, huge_buffer_counter, length);
                             send_retval = send(socket, &packet_array, PACKET_MAX_BYTES, 0);
 
                             if (send_retval == -1)
@@ -416,7 +415,7 @@ int main()
                                 else
                                 {
                                     if ((recv_retval != -1) and request.origin_address == CLIENT){
-                                        printf("Didnt want %d. wanted %d\n", request.packet_id, (msg_counter + 1) % 16);
+                                        // printf("Didnt want %d. wanted %d\n", request.packet_id, (msg_counter + 1) % 16);
                                         // print_packet(&request);
                                     }
                                     recv_counter++;
@@ -440,7 +439,7 @@ int main()
                             make_packet_array(packet_array, &response);
                             send_retval = send(socket, &packet_array, PACKET_MAX_BYTES, 0);
                             if (send_retval != -1)
-                                printf("Sent END\n");
+                                printf("\nSent END\n");
                             else
                                 printf("Could not send END\n");
 
