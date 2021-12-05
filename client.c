@@ -441,7 +441,7 @@ int main()
                         else
                         {
                             if ((recv_retval != -1) and response.origin_address == SERVER){
-                                printf("Didnt want %d. wanted %d\n", response.packet_id, (msg_counter + 1) % 16);
+                                // printf("Didnt want %d. wanted %d\n", response.packet_id, (msg_counter + 1) % 16);
                                 // print_packet(&response);
                             }
                             recv_counter++;
@@ -517,7 +517,10 @@ int main()
                         printf("failed to send END\n");
                     }
                     else
+                    {
                         printf("Done.\n");
+                        usleep(TIME_BETWEEN_TRIES);
+                    }
                         
                 }
                 else
@@ -554,7 +557,8 @@ int main()
                     type = VER;
                     request.type = type;
                 }
-                else if ((command_id == LINHA) or (command_id == LINHAS))
+
+                else if ((command_id == LINHA) or (command_id == LINHAS) or (command_id == COMPILAR))
                 {
                     memset(request.data, 0, DATA_BYTES);
                     type_of_response = FILE_CONTENT;
@@ -600,6 +604,13 @@ int main()
                         bool got_something = false;
                         int recv_counter = 0;
 
+                        if (data_stream_finished)
+                        {
+                            got_something = true;
+                            got_succexy = true;
+                        }
+
+
                         while (not got_something and (recv_counter < MAX_RECEIVE_TRIES) 
                                and not data_stream_finished)
                         // if data_stream_finished, client won't receive LS_CONTENT anymore.
@@ -617,11 +628,12 @@ int main()
                             if ((recv_retval != -1) and valid_packet(&response, (msg_counter + 1) % 16)
                                 and response.origin_address == SERVER)
                             {
+                                printf("Got something\n");
                                 // REAL PACKAGE!!!!
                                 if (response.type == type_of_response)
                                 {
                                     request_validated = true;
-                                    // printf("Got content: '%s'\n", response.data);
+                                    printf("Got content: '%s'\n", response.data);
                                     strcat(huge_buffer, response.data);
                                     got_something = true;
                                     got_succexy = true;
@@ -651,7 +663,7 @@ int main()
                                 if (recv_retval != -1)
                                 {
                                     if (response.origin_address == SERVER){
-                                        // printf("Didnt want %d. wanted %d\n", response.packet_id, (msg_counter + 1) % 16);
+                                        printf("Didnt want %d. wanted %d\n", response.packet_id, (msg_counter + 1) % 16);
                                         // print_packet(&response);
                                         // printf("\n");
                                     }

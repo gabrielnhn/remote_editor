@@ -458,6 +458,12 @@ int main()
                                 bool got_something = false;
                                 int recv_counter = 0;
 
+                                if (data_stream_finished)
+                                {
+                                    got_something = true;
+                                    got_succexy = true;
+                                }
+
                                 while (not got_something and (recv_counter < MAX_RECEIVE_TRIES) 
                                     and not data_stream_finished)
                                 // if data_stream_finished, client won't receive LS_CONTENT anymore.
@@ -559,13 +565,12 @@ int main()
                             {
                                 int retval = compile(huge_buffer, huge_buffer);
                                 printf("COMPILE RETVAL: %d\n", retval);
-                                printf("HUGE BUFFER: '%s'\n", huge_buffer);
+                                printf("gcc output: '%s'\n", huge_buffer);
                             }
                         }
 
                         else{
                             printf("DATA STREAM error.\n");
-                            // printf("%s", huge_buffer);
                         }
                         
 
@@ -577,14 +582,22 @@ int main()
                     if ((command_id == LS) or (command_id == VER) or
                         (command_id == LINHA) or (command_id == LINHAS) or (command_id == COMPILAR))
                     {
+
+                        if (command_id == COMPILAR)
+                        {
+                            type = FILE_CONTENT;
+                            msg_counter = (msg_counter - 1);
+                            if (msg_counter < 0)
+                                msg_counter = 16 + msg_counter;
+                        }
+                        else
+                            msg_counter = (msg_counter + 1) % 16;
                         // Now it gets tricky.
                         // huge_buffer has LS output.
 
                         huge_buffer_counter = 0;
                         int length = strlen(huge_buffer);
 
-
-                        msg_counter = (msg_counter + 1) % 16;
 
                         bool sent_succexy = true;
                         printf("Starting transmission:\n");
@@ -598,7 +611,7 @@ int main()
                                 // Set next response packet
                                 memset(response.data, 0, DATA_BYTES);
                                 strncpy(response.data, huge_buffer + huge_buffer_counter, 14);
-                                // printf("sending response.data: '%s'\n", response.data);
+                                printf("sending response.data: '%s'\n", response.data);
                                 // print_packet
 
                                 huge_buffer_counter += strlen(response.data);
@@ -615,7 +628,7 @@ int main()
                             }
 
                             // send response
-                            // printf("Sending packet, id %d, i%d/%d\n", response.packet_id, huge_buffer_counter, length);
+                            printf("Sending packet, id %d, type %d \n", response.packet_id, response.packet_id);
                             send_retval = send(socket, &packet_array, PACKET_MAX_BYTES, 0);
 
                             if (send_retval == -1)
