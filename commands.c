@@ -295,7 +295,7 @@ int edit(char* path, int index, char* new_line)
         if (i == index)
         {
             strcat(buffer, new_line);
-            printf("put '%s'\n", new_line);
+            // printf("put '%s'\n", new_line);
             edited = true;
         }
         else
@@ -310,7 +310,7 @@ int edit(char* path, int index, char* new_line)
     if (i == index)
     {
         strcat(buffer, new_line);
-        printf("put '%s'\n", new_line);
+        // printf("put '%s'\n", new_line);
         edited = true;
     }
     fclose (f); // stop reading
@@ -319,6 +319,8 @@ int edit(char* path, int index, char* new_line)
     {
         f = fopen(path, "w");
         printf("Writing '%s' into file %s\n", buffer, path);
+        strcat(buffer, "\n");
+
         fputs(buffer, f); // fill it with buffered content
         fclose(f);
         return SUCCEXY;

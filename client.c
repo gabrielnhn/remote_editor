@@ -67,7 +67,9 @@ int parse_str_command(char* command)
 
     else if (strncmp(command, "edit", strlen("edit")) == 0)
     {
-        sscanf(command + 5, "%d %s \"%s\"", &linha1, path, huge_buffer);
+        // sscanf(command + 5, "%d %s \"%s\"", &linha1, path, huge_buffer);
+        sscanf(command + 5, "%d %s \"%[^\"]\"", &linha1, path, huge_buffer);
+
         return EDIT; // local operation.
     }
 
