@@ -19,12 +19,12 @@
 #define LCD 2
 #define LS 3
 #define LLS 4
-#define VER 5
+#define VER 0b0010
 #define LINHA 6
 #define LINHAS 7
 #define COMPILAR 9
 
-
+#define EDIT 0b0101
 #define LINHAS_INDEXES 0b1010
 #define LS_CONTENT 0b1011
 #define FILE_CONTENT 0b1100

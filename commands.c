@@ -110,6 +110,7 @@ int indexed_cat(const char* path, char* destination)
     int i;
     int retval = SUCCEXY;
 
+    printf("reading '%s'\n", path);
     // abre o arquivo em leitura
     f = fopen (path, "r") ;
     if (f == NULL)
@@ -266,7 +267,7 @@ int edit(const char* path, int index, const char* new_line, char* buffer)
     int retval = SUCCEXY;
 
     // abre o arquivo em leitura e escrita
-    f = fopen (path, "r+") ;
+    f = fopen (path, "r") ;
     if (f == NULL)
     {
         if (errno == EACCES)
@@ -322,10 +323,3 @@ int edit(const char* path, int index, const char* new_line, char* buffer)
         return LINE_DOES_NOT_EXIST;
 
 }
-
-
-// int main()
-// {
-//     ls(".");
-//     return 0;
-// }
