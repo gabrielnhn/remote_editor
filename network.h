@@ -15,7 +15,7 @@
 #include <iso646.h>
 #include <sys/time.h>
 
-#define MAX_SEND_TRIES 4
+#define MAX_SEND_TRIES 5
 #define MAX_RECEIVE_TRIES 25
 //microsec
 #define TIME_BETWEEN_TRIES 10000 //* 100 //* 3

@@ -214,7 +214,8 @@ int main()
 
                 bool sent_linha = false;
                 bool sent_query = false;
-                while((not sent_linha) or (not sent_query))
+                bool error = false;
+                while(((not sent_linha) or (not sent_query)) and not error)
                 {
                     if (not sent_linha)
                     {
@@ -301,6 +302,12 @@ int main()
                                     sent_linha = true;
                                 got_something = true;
                                 msg_counter = (msg_counter + 2) % 16;
+                            }
+                            else if (response.type == ERROR)
+                            {
+                                printf("Server return with ERROR '%d'\n", *response.data);
+                                error = true;
+                                command_id = NOP;
                             }
                             else
                                 printf("Got something completely unexpected, type %d\n", response.type);
