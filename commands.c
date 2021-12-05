@@ -329,3 +329,29 @@ int edit(char* path, int index, char* new_line)
         return LINE_DOES_NOT_EXIST;
 
 }
+
+
+int compile(char* path, char* destination)
+{
+    char buffer[STR_MAX] = "gcc ";
+    strcat(buffer, path);
+    
+    FILE* RESULT = popen(buffer, "r");
+    if (RESULT == NULL)
+    {
+        return FILE_DOES_NOT_EXIST;
+    }
+
+    // lê TODAS as linhas do arquivo
+
+    fgets (buffer, STR_MAX, RESULT);
+    while (not feof (RESULT))
+    {
+        strcat(destination, buffer);
+        fgets (buffer, STR_MAX, RESULT) ;   // tenta ler a próxima linha
+    }
+
+    // fecha o arquivo
+    fclose (RESULT);
+    return SUCCEXY;
+}
