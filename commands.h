@@ -17,20 +17,22 @@
 // no operation / local operation
 #define NOP -1
 
-bool get_realpath(const char* path, char* buf);
+bool get_realpath(char* path, char* buf);
 
 int cd(char* path, char* current_dir);
 
-int ls_to_string(const char* path, char* destination);
+int ls_to_string(char* path, char* destination);
 
 int ls(char* path);
 
-int indexed_cat(const char* path, char* destination);
+int indexed_cat(char* path, char* destination);
 
-int check_filename(const char* path);
+int check_filename(char* path);
 
-int get_line(const char* path, int line_index, char* destination);
+int get_line(char* path, int line_index, char* destination);
 
-int get_lines(const char* path, int line1, int line2, char* destination);
+int get_lines(char* path, int line1, int line2, char* destination);
+
+int edit(char* path, int index, char* new_line);
 
 #endif

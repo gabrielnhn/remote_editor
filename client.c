@@ -458,12 +458,15 @@ int main()
                         if (not got_succexy)
                         // got LS_CONTENT successfully
                         {
-                            if (request_validated)
-                                type = NACK;
-                            else
-                                type = command_id;
+                            if (not data_stream_finished)
+                            {
+                                if (request_validated)
+                                    type = NACK;
+                                else
+                                    type = command_id;
 
-                            data_size = 0;
+                                data_size = 0;
+                            }
                         }
                         else
                         {
@@ -492,7 +495,7 @@ int main()
 
             }
 
-            // SEND A DATA STREAM
+            // SEND DATA STREAM
             if (command_id == EDIT)
             {
                 // Now it gets tricky.
@@ -501,7 +504,7 @@ int main()
                 int huge_buffer_counter = 0;
                 int length = strlen(huge_buffer);
 
-                msg_counter = (msg_counter + 1) % 16;
+                msg_counter = (msg_counter) % 16;
 
                 bool sent_succexy = true;
                 printf("Starting transmission:\n");
@@ -522,7 +525,7 @@ int main()
                         // printf("counter: %d < %d\n", huge_buffer_counter, length);
 
                         request.data_size = strlen(request.data) + 1;
-                        request.type = type;
+                        request.type = FILE_CONTENT;
                         request.packet_id = msg_counter;
 
                         make_packet_array(packet_array, &request);
@@ -532,7 +535,7 @@ int main()
                     }
 
                     // send request
-                    // printf("Sending packet, id %d, i%d/%d\n", request.packet_id, huge_buffer_counter, length);
+                    printf("Sending packet, id %d, \n", request.packet_id);
                     send_retval = send(socket, &packet_array, PACKET_MAX_BYTES, 0);
 
                     if (send_retval == -1)
@@ -541,7 +544,7 @@ int main()
                     usleep(TIME_BETWEEN_TRIES);
                     
 
-                    // get acknowledgement FROM CLIENT
+                    // get acknowledgement FROM SERVER
                     bool got_something = false;
                     int recv_counter = 0;
 
@@ -557,20 +560,20 @@ int main()
 
                         // check response
                         if ((recv_retval != -1) and (valid_packet(&response, (msg_counter + 1) % 16))
-                            and response.origin_address == CLIENT)
+                            and response.origin_address == SERVER)
                         {
-                            // printf("Got %d\n", response.packet_id);
+                            printf("Got %d\n", response.packet_id);
                             // REAL PACKAGE!!!!
 
                             if (response.type == NACK)
                             {
-                                // printf("GOT NACK\n");
+                                printf("GOT NACK\n");
                                 sent_succexy = false;
                                 got_something = true;
                             }
                             else if (response.type == ACK)
                             {
-                                // printf("GOT ACK\n");
+                                printf("GOT ACK %d\n", response.packet_id);
                                 sent_succexy = true;
                                 got_something = true;
                             }
@@ -587,20 +590,23 @@ int main()
                         }
                         else
                         {
-                            if ((recv_retval != -1) and response.origin_address == CLIENT){
-                                // printf("Didnt want %d. wanted %d\n", response.packet_id, (msg_counter + 1) % 16);
+                            if ((recv_retval != -1) and response.origin_address == SERVER){
+                                printf("Didnt want %d. wanted %d\n", response.packet_id, (msg_counter + 1) % 16);
                                 // print_packet(&response);
                             }
                             recv_counter++;
                         }
-                        if (sent_succexy)
+
+                        if (sent_succexy){
+                            printf("UPDATED!\n");
                             msg_counter = (msg_counter + 2) % 16;
+                        }
 
                     }
                     send_counter++;
                 }
 
-                if (huge_buffer_counter >= length)
+                if (sent_succexy and (huge_buffer_counter >= length))
                 {
                     // SEND END OF TRANSMISSION
                     send_counter = 0;
@@ -615,7 +621,7 @@ int main()
                         make_packet_array(packet_array, &request);
                         send_retval = send(socket, &packet_array, PACKET_MAX_BYTES, 0);
                         if (send_retval != -1)
-                            printf("\nSent END\n");
+                            printf("\nSent END as id %d\n", msg_counter);
                         else
                             printf("Could not send END\n");
 
@@ -635,7 +641,7 @@ int main()
 
                             // check for last ACK
                             if ((recv_retval != -1) and (valid_packet(&response, (msg_counter + 1) % 16))
-                                and response.origin_address == CLIENT)
+                                and response.origin_address == SERVER)
                             {
                                 // REAL PACKAGE!!!!
                                 if (response.type == NACK)

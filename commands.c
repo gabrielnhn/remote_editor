@@ -14,7 +14,7 @@
 #include <errno.h>
 #include <stdlib.h>
 
-bool get_realpath(const char* path, char* buf)
+bool get_realpath(char* path, char* buf)
 {
     char* buffer = NULL;
     char *res = realpath(path, buffer);
@@ -69,7 +69,7 @@ int ls(char* path)
     return 0;
 }
 
-int ls_to_string(const char* path, char* destination)
+int ls_to_string(char* path, char* destination)
 {
     strcpy(destination, "");
 
@@ -104,7 +104,7 @@ int ls_to_string(const char* path, char* destination)
     return 0;
 }
 
-int indexed_cat(const char* path, char* destination)
+int indexed_cat(char* path, char* destination)
 {
     FILE *f;
     int i;
@@ -148,7 +148,7 @@ int indexed_cat(const char* path, char* destination)
     return retval;
 }
 
-int check_filename(const char* path)
+int check_filename(char* path)
 {
     FILE *f;
     f = fopen (path, "r") ;
@@ -161,7 +161,7 @@ int check_filename(const char* path)
 }
 
 
-int get_line(const char* path, int line_index, char* destination)
+int get_line(char* path, int line_index, char* destination)
 {
     FILE *f;
     int i;
@@ -209,7 +209,7 @@ int get_line(const char* path, int line_index, char* destination)
     return retval;
 }
 
-int get_lines(const char* path, int line1, int line2, char* destination)
+int get_lines(char* path, int line1, int line2, char* destination)
 {
     FILE *f;
     int i;
@@ -260,7 +260,7 @@ int get_lines(const char* path, int line1, int line2, char* destination)
     return retval;
 }
 
-int edit(const char* path, int index, const char* new_line, char* buffer)
+int edit(char* path, int index, char* new_line)
 {
     FILE *f;
     int i;
@@ -281,6 +281,7 @@ int edit(const char* path, int index, const char* new_line, char* buffer)
         return retval;
     }
 
+    char buffer[A_LOT];
     strcpy(buffer, "");
 
     bool edited = false;
@@ -294,6 +295,7 @@ int edit(const char* path, int index, const char* new_line, char* buffer)
         if (i == index)
         {
             strcat(buffer, new_line);
+            printf("put '%s'\n", new_line);
             edited = true;
         }
         else
@@ -308,6 +310,7 @@ int edit(const char* path, int index, const char* new_line, char* buffer)
     if (i == index)
     {
         strcat(buffer, new_line);
+        printf("put '%s'\n", new_line);
         edited = true;
     }
     fclose (f); // stop reading
@@ -315,6 +318,7 @@ int edit(const char* path, int index, const char* new_line, char* buffer)
     if (edited)
     {
         f = fopen(path, "w");
+        printf("Writing '%s' into file %s\n", buffer, path);
         fputs(buffer, f); // fill it with buffered content
         fclose(f);
         return SUCCEXY;

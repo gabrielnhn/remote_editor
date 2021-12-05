@@ -16,7 +16,7 @@
 #define ACK 0b1000
 #define NACK 0b1001
 
-#define LCD 2
+#define LCD 50
 #define LS 3
 #define LLS 4
 #define VER 0b0010
