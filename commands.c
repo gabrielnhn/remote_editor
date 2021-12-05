@@ -336,22 +336,28 @@ int compile(char* path_and_options, char* destination)
 {
     char buffer[STR_MAX] = "gcc ";
     strcat(buffer, path_and_options);
+    strcat(buffer, " 2>&1");
     
     FILE* RESULT = popen(buffer, "r");
     if (RESULT == NULL)
     {
+        printf("COMPILAR file does not exist\n");
         return FILE_DOES_NOT_EXIST;
     }
 
     // lê TODAS as linhas do arquivo
+    strcpy(destination, "");
+
 
     fgets (buffer, STR_MAX, RESULT);
     while (not feof (RESULT))
     {
+        // printf("gcc out: %s\n", buffer);
         strcat(destination, buffer);
         fgets (buffer, STR_MAX, RESULT) ;   // tenta ler a próxima linha
     }
 
+    // printf("GCC ended\n");
     // fecha o arquivo
     fclose (RESULT);
     return SUCCEXY;

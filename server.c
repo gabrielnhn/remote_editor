@@ -395,8 +395,8 @@ int main()
                         }
                         else if (command_id == COMPILAR)
                             msg_counter = (msg_counter + 1) % 16;
-                            
-                        printf("Starting to receive. counter: %d\n", msg_counter);
+
+                        // printf("Starting to receive. counter: %d\n", msg_counter);
                         // else if (command_id == COMPILAR)
                         // {
                         //     msg_counter = (msg_counter + 1) % 16;
@@ -559,6 +559,7 @@ int main()
                             {
                                 int retval = compile(huge_buffer, huge_buffer);
                                 printf("COMPILE RETVAL: %d\n", retval);
+                                printf("HUGE BUFFER: '%s'\n", huge_buffer);
                             }
                         }
 
