@@ -17,12 +17,13 @@
 #define NACK 0b1001
 
 #define LCD 50
-#define LS 3
 #define LLS 4
+
+#define LS 0b0001
 #define VER 0b0010
-#define LINHA 6
-#define LINHAS 7
-#define COMPILAR 9
+#define LINHA 0b0011
+#define LINHAS 0b0100
+#define COMPILAR 0b0110
 
 #define EDIT 0b0101
 #define LINHAS_INDEXES 0b1010

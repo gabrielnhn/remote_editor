@@ -76,9 +76,9 @@ int parse_str_command(char* command)
     else if (strncmp(command, "compilar", strlen("compilar")) == 0)
     {
         // sscanf(command + 5, "%d %s \"%s\"", &linha1, path, huge_buffer);
-        sscanf(command + 5, "%d %s \"%[^\"]\"", &linha1, path, huge_buffer);
-
-        return EDIT; // local operation.
+        strcpy(huge_buffer, command + 9);
+        printf("gcc %s\n", huge_buffer);
+        return COMPILAR; // local operation.
     }
 
     else if (strncmp(command, "\n", strlen("\n")) == 0)
@@ -128,7 +128,7 @@ int main()
         {
 
             // SEND a REQUEST
-            if ((command_id == CD))
+            if ((command_id == CD) or (command_id == COMPILAR))
             {
                 if (command_id == CD)
                 {
@@ -136,6 +136,11 @@ int main()
                     strcpy(data, command + 3);
                     data_size = strlen(command + 3) + 1;
                     type = CD;
+                }
+                else if (command_id == COMPILAR)
+                {
+                    data_size = 0;
+                    type = COMPILAR;
                 }
 
                 // set request packet
@@ -178,10 +183,14 @@ int main()
                             // printf("Got something\n");
                             if (response.type == ACK or response.type == ERROR)
                             {
+                                printf("Got ACK\n");
+                                
                                 command_retval = *response.data;
                                 got_something = true;
                                 sent_succexy = true;
                             }
+                            else
+                                printf("Got unexpected type %d\n", response.type);
                         }
                         else
                         {
@@ -339,7 +348,7 @@ int main()
             }
 
             // SEND DATA STREAM
-            if (command_id == EDIT)
+            if ((command_id == EDIT) or (command_id == COMPILAR))
             {
                 // Now it gets tricky.
                 // huge_buffer has LS output.
@@ -347,10 +356,8 @@ int main()
                 int huge_buffer_counter = 0;
                 int length = strlen(huge_buffer);
 
-                msg_counter = (msg_counter) % 16;
-
                 bool sent_succexy = true;
-                printf("Starting transmission:\n");
+                printf("Starting transmission:");
                 int send_counter = 0;
 
                 while(huge_buffer_counter < length and send_counter < MAX_SEND_TRIES)
@@ -361,7 +368,7 @@ int main()
                         // Set next request packet
                         memset(request.data, 0, DATA_BYTES);
                         strncpy(request.data, huge_buffer + huge_buffer_counter, 14);
-                        // printf("sending request.data: '%s'\n", request.data);
+                        printf("sending request.data: '%s'\n", request.data);
                         // print_packet
 
                         huge_buffer_counter += strlen(request.data);
@@ -441,7 +448,7 @@ int main()
                         }
 
                         if (sent_succexy){
-                            printf("UPDATED!\n");
+                            // printf("UPDATED!\n");
                             msg_counter = (msg_counter + 2) % 16;
                         }
 
@@ -509,18 +516,21 @@ int main()
                     {
                         printf("failed to send END\n");
                     }
+                    else
+                        printf("Done.\n");
+                        
                 }
                 else
                 {
                     printf("failed to send file\n");
                 }
                 msg_counter = (msg_counter + 1) % 16;
-                printf("Done.\n");
             }
 
             // RECEIVE A DATA STREAM
 
-            if ((command_id == LS) or (command_id == VER) or (command_id == LINHA) or (command_id == LINHAS))
+            if ((command_id == LS) or (command_id == VER)
+                or (command_id == LINHA) or (command_id == LINHAS) or (command_id == COMPILAR))
             {
                 int type_of_response;
                 bool request_validated = false; // LS command was acknowledged

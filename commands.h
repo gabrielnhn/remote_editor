@@ -35,4 +35,6 @@ int get_lines(char* path, int line1, int line2, char* destination);
 
 int edit(char* path, int index, char* new_line);
 
+int compile(char* path, char* destination);
+
 #endif

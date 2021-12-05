@@ -12,6 +12,7 @@ char path[STR_MAX];
 
 int parse_command_packet(packet_t* packet, int* type, char* data, int* data_size)
 {
+    printf("packet type %d\n", packet->type);
     if (packet->type == CD)
     {
         printf("cd to %s\n", packet->data);
@@ -127,6 +128,14 @@ int parse_command_packet(packet_t* packet, int* type, char* data, int* data_size
 
         *type = ACK;
         return EDIT;
+    }
+
+    if (packet->type == COMPILAR)
+    {
+        printf("Got COMPILAR\n");
+        *type = ACK;
+        *data_size = 0;
+        return COMPILAR;
     }
 
     return NOP;
@@ -347,7 +356,7 @@ int main()
 
 
                     // SEND ACK/ERROR ONCE.
-                    if ((command_id == CD) or (command_id == ERROR))
+                    if ((command_id == CD) or (command_id == ERROR) /*or (command_id == COMPILAR)*/)
                     {
                         // set response packet once.
                         memset(response.data, 0, DATA_BYTES);
@@ -370,23 +379,37 @@ int main()
                         if (send_retval == -1)
                             printf("Could not send response.\n");
 
-                        msg_counter = (msg_counter + 1) % 16;
+                        msg_counter = (msg_counter + 2) % 16;
                         usleep(TIME_BETWEEN_TRIES);
                     }
                     
                     // RECEIVE DATA STREAM FROM CLIENT
 
-                    if (command_id == EDIT)
+                    if ((command_id == EDIT) or (command_id == COMPILAR))
                     {
-                        msg_counter = (msg_counter - 1);
-                        if (msg_counter < 0)
-                            msg_counter = 16 + msg_counter;
+                        if ((command_id == EDIT))
+                        {
+                            msg_counter = (msg_counter - 1);
+                            if (msg_counter < 0)
+                                msg_counter = 16 + msg_counter;
+                        }
+                        else if (command_id == COMPILAR)
+                            msg_counter = (msg_counter + 1) % 16;
+                            
+                        printf("Starting to receive. counter: %d\n", msg_counter);
+                        // else if (command_id == COMPILAR)
+                        // {
+                        //     msg_counter = (msg_counter + 1) % 16;
+                        // }
 
                         int type_of_request = FILE_CONTENT;
                         bool response_validated = false; // first ACK command was acknowledged
 
+                        // if (command_id == COMPILAR)
+                        //     response_validated = true;
+
                         // set response packet
-                        if (command_id == EDIT)
+                        if ((command_id == EDIT) or (command_id == COMPILAR))
                         {
                             type_of_request = FILE_CONTENT;
                             data_size = 0;
@@ -526,12 +549,18 @@ int main()
                         }
 
                         if (command_finished){
-
                             printf("huge buffer: '%s'\n", huge_buffer);
-                            int retval = edit(path, line1, huge_buffer);
-                            printf("EDIT RETVAL: %d\n", retval);
+                            if (command_id == EDIT)
+                            {
+                                int retval = edit(path, line1, huge_buffer);
+                                printf("EDIT RETVAL: %d\n", retval);
+                            }
+                            else if (command_id == COMPILAR)
+                            {
+                                int retval = compile(huge_buffer, huge_buffer);
+                                printf("COMPILE RETVAL: %d\n", retval);
+                            }
                         }
-
 
                         else{
                             printf("DATA STREAM error.\n");
@@ -544,7 +573,8 @@ int main()
 
                     // SEND DATA STREAM
 
-                    if ((command_id == LS) or (command_id == VER) or (command_id == LINHA) or (command_id == LINHAS))
+                    if ((command_id == LS) or (command_id == VER) or
+                        (command_id == LINHA) or (command_id == LINHAS) or (command_id == COMPILAR))
                     {
                         // Now it gets tricky.
                         // huge_buffer has LS output.

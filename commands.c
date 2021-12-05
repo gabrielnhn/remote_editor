@@ -331,10 +331,11 @@ int edit(char* path, int index, char* new_line)
 }
 
 
-int compile(char* path, char* destination)
+int compile(char* path_and_options, char* destination)
+// `path_and_options` and `destination` can be the same
 {
     char buffer[STR_MAX] = "gcc ";
-    strcat(buffer, path);
+    strcat(buffer, path_and_options);
     
     FILE* RESULT = popen(buffer, "r");
     if (RESULT == NULL)
