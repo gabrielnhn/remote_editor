@@ -374,8 +374,175 @@ int main()
                         usleep(TIME_BETWEEN_TRIES);
                     }
                     
+                    // RECEIVE DATA STREAM FROM CLIENT
 
-                    // LS LS LS OR VER OR LINHA
+                    if (command_id == EDIT)
+                    {
+                        msg_counter = (msg_counter - 1);
+                        if (msg_counter < 0)
+                            msg_counter = 16 + msg_counter;
+
+                        int type_of_request = FILE_CONTENT;
+                        bool response_validated = false; // first ACK command was acknowledged
+
+                        // set response packet
+                        if (command_id == EDIT)
+                        {
+                            type_of_request = FILE_CONTENT;
+                            data_size = 0;
+                            memset(response.data, 0, DATA_BYTES);
+                            type = ACK;
+                            response.type = type;
+                        }
+
+                        // RESET BUFFER
+                        strcpy(huge_buffer, "");
+
+                        bool command_finished = false; // should end
+                        bool data_stream_finished = false; // should end after this iteration
+                        bool error = false;
+                        bool got_succexy;
+                        int error_from_client = 0;
+
+                        int send_counter = 0;
+                        while (not command_finished and send_counter < MAX_SEND_TRIES and not error)
+                        {
+                            if (data_stream_finished)
+                                command_finished = true;
+
+                            send_counter = 0;
+                            got_succexy = false; // got LS_CONTENT
+                        
+                            while (not got_succexy and send_counter < MAX_SEND_TRIES)
+                            {
+                                // set ACK or NACK
+                                // memset(response.data, 0, DATA_BYTES);
+                                response.data_size = data_size;
+                                response.type = type;
+                                response.packet_id = msg_counter;
+                                make_packet_array(packet_array, &response);
+                                // print_packet(&response);
+                                
+                                // send ACK/NACK
+                                printf("sending packet, id %d, type %d\n", response.packet_id, response.type);
+                                send_retval = send(socket, &packet_array, PACKET_MAX_BYTES, 0);
+                                if (send_retval == -1)
+                                    printf("Error: nothing was sent.\n");
+
+                                usleep(TIME_BETWEEN_TRIES);
+
+                                // receive FILE_CONTENT from client
+                                bool got_something = false;
+                                int recv_counter = 0;
+
+                                while (not got_something and (recv_counter < MAX_RECEIVE_TRIES) 
+                                    and not data_stream_finished)
+                                // if data_stream_finished, client won't receive LS_CONTENT anymore.
+                                {
+
+                                    recv_retval = recv(socket,&packet_array, PACKET_MAX_BYTES, 0);
+
+                                    if (recv_retval != -1){
+                                        get_packet_from_array(packet_array, &request);
+                                    }
+                                    else
+                                        memset(packet_array, 0, PACKET_MAX_BYTES);
+
+                                    // check request
+                                    if ((recv_retval != -1) and valid_packet(&request, (msg_counter + 1) % 16)
+                                        and request.origin_address == CLIENT)
+                                    {
+                                        // REAL PACKAGE!!!!
+                                        if (request.type == type_of_request)
+                                        {
+                                            response_validated = true;
+                                            printf("Got content: '%s' on id %d\n", request.data, request.packet_id);
+                                            strcat(huge_buffer, request.data);
+                                            got_something = true;
+                                            got_succexy = true;
+                                        }
+                                        else if (request.type == END)
+                                        {
+                                            printf("Got END\n");
+                                            got_something = true;
+                                            got_succexy = true;
+                                            data_stream_finished = true;
+                                        }
+                                        else if (request.type == ERROR)
+                                        {
+                                            got_something = true;
+                                            got_succexy = true;
+                                            printf("Got error message\n");
+                                            error_from_client = *request.data;
+                                            error = true;
+                                        }
+                                        else
+                                            printf("Got unexpected type %d\n", request.type);
+
+                                        got_something = true;
+                                    }
+                                    // timeout
+                                    else
+                                    {
+                                        if (recv_retval != -1)
+                                        {
+                                            if (request.origin_address == CLIENT){
+                                                printf("Didnt want %d. wanted %d\n", request.packet_id, (msg_counter + 1) % 16);
+                                                // print_packet(&request);
+                                                // printf("\n");
+                                            }
+                                        }
+                                        recv_counter++;
+                                    }
+                                }
+                                send_counter++;
+
+                                if (not got_succexy)
+                                // got LS_CONTENT successfully
+                                {
+                                    if (not data_stream_finished){
+                                        if (response_validated)
+                                            type = NACK;
+                                        else
+                                            type = command_id;
+
+                                        data_size = 0;
+                                    }
+                                }
+                                else
+                                {
+                                    msg_counter = (msg_counter + 2) % 16;
+                                    printf("counter: %d\n", msg_counter);
+                                    type = ACK;
+                                }
+                            }
+                        }
+
+                        // DATA STREAM ENDED
+
+                        if (error)
+                        {
+                            printf("client sent error '%d'\n", error_from_client);
+                        }
+
+                        if (command_finished){
+
+                            printf("huge buffer: '%s'\n", huge_buffer);
+                            int retval = edit(path, line1, huge_buffer);
+                            printf("EDIT RETVAL: %d\n", retval);
+                        }
+
+
+                        else{
+                            printf("DATA STREAM error.\n");
+                            // printf("%s", huge_buffer);
+                        }
+                        
+
+                    }
+
+
+                    // SEND DATA STREAM
 
                     if ((command_id == LS) or (command_id == VER) or (command_id == LINHA) or (command_id == LINHAS))
                     {
@@ -552,176 +719,6 @@ int main()
                         }
                         msg_counter = (msg_counter + 1) % 16;
                         printf("Done.\n");
-                    }
-
-
-                    // RECEIVE DATA STREAM FROM CLIENT
-
-
-
-                    if (command_id == EDIT)
-                    {
-                        msg_counter = (msg_counter - 1);
-                        if (msg_counter < 0)
-                            msg_counter = 16 + msg_counter;
-
-                        int type_of_request = FILE_CONTENT;
-                        bool response_validated = false; // first ACK command was acknowledged
-
-                        // set response packet
-                        if (command_id == EDIT)
-                        {
-                            type_of_request = FILE_CONTENT;
-                            data_size = 0;
-                            memset(response.data, 0, DATA_BYTES);
-                            type = ACK;
-                            response.type = type;
-                        }
-
-                        // RESET BUFFER
-                        strcpy(huge_buffer, "");
-
-                        bool command_finished = false; // should end
-                        bool data_stream_finished = false; // should end after this iteration
-                        bool error = false;
-                        bool got_succexy;
-                        int error_from_client = 0;
-
-                        int send_counter = 0;
-                        while (not command_finished and send_counter < MAX_SEND_TRIES and not error)
-                        {
-                            if (data_stream_finished)
-                                command_finished = true;
-
-                            send_counter = 0;
-                            got_succexy = false; // got LS_CONTENT
-                        
-                            while (not got_succexy and send_counter < MAX_SEND_TRIES)
-                            {
-                                // set ACK or NACK
-                                // memset(response.data, 0, DATA_BYTES);
-                                response.data_size = data_size;
-                                response.type = type;
-                                response.packet_id = msg_counter;
-                                make_packet_array(packet_array, &response);
-                                // print_packet(&response);
-                                
-                                // send ACK/NACK
-                                printf("sending packet, id %d, type %d\n", response.packet_id, response.type);
-                                send_retval = send(socket, &packet_array, PACKET_MAX_BYTES, 0);
-                                if (send_retval == -1)
-                                    printf("Error: nothing was sent.\n");
-
-                                usleep(TIME_BETWEEN_TRIES);
-
-                                // receive FILE_CONTENT from client
-                                bool got_something = false;
-                                int recv_counter = 0;
-
-                                while (not got_something and (recv_counter < MAX_RECEIVE_TRIES) 
-                                    and not data_stream_finished)
-                                // if data_stream_finished, client won't receive LS_CONTENT anymore.
-                                {
-
-                                    recv_retval = recv(socket,&packet_array, PACKET_MAX_BYTES, 0);
-
-                                    if (recv_retval != -1){
-                                        get_packet_from_array(packet_array, &request);
-                                    }
-                                    else
-                                        memset(packet_array, 0, PACKET_MAX_BYTES);
-
-                                    // check request
-                                    if ((recv_retval != -1) and valid_packet(&request, (msg_counter + 1) % 16)
-                                        and request.origin_address == CLIENT)
-                                    {
-                                        // REAL PACKAGE!!!!
-                                        if (request.type == type_of_request)
-                                        {
-                                            response_validated = true;
-                                            printf("Got content: '%s' on id %d\n", request.data, request.packet_id);
-                                            strcat(huge_buffer, request.data);
-                                            got_something = true;
-                                            got_succexy = true;
-                                        }
-                                        else if (request.type == END)
-                                        {
-                                            printf("Got END\n");
-                                            got_something = true;
-                                            got_succexy = true;
-                                            data_stream_finished = true;
-                                        }
-                                        else if (request.type == ERROR)
-                                        {
-                                            got_something = true;
-                                            got_succexy = true;
-                                            printf("Got error message\n");
-                                            error_from_client = *request.data;
-                                            error = true;
-                                        }
-                                        else
-                                            printf("Got unexpected type %d\n", request.type);
-
-                                        got_something = true;
-                                    }
-                                    // timeout
-                                    else
-                                    {
-                                        if (recv_retval != -1)
-                                        {
-                                            if (request.origin_address == CLIENT){
-                                                printf("Didnt want %d. wanted %d\n", request.packet_id, (msg_counter + 1) % 16);
-                                                // print_packet(&request);
-                                                // printf("\n");
-                                            }
-                                        }
-                                        recv_counter++;
-                                    }
-                                }
-                                send_counter++;
-
-                                if (not got_succexy)
-                                // got LS_CONTENT successfully
-                                {
-                                    if (not data_stream_finished){
-                                        if (response_validated)
-                                            type = NACK;
-                                        else
-                                            type = command_id;
-
-                                        data_size = 0;
-                                    }
-                                }
-                                else
-                                {
-                                    msg_counter = (msg_counter + 2) % 16;
-                                    printf("counter: %d\n", msg_counter);
-                                    type = ACK;
-                                }
-                            }
-                        }
-
-                        // DATA STREAM ENDED
-
-                        if (error)
-                        {
-                            printf("client sent error '%d'\n", error_from_client);
-                        }
-
-                        if (command_finished){
-
-                            printf("huge buffer: '%s'\n", huge_buffer);
-                            int retval = edit(path, line1, huge_buffer);
-                            printf("EDIT RETVAL: %d\n", retval);
-                        }
-
-
-                        else{
-                            printf("DATA STREAM error.\n");
-                            // printf("%s", huge_buffer);
-                        }
-                        
-
                     }
                 }
 
