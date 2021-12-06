@@ -712,6 +712,8 @@ int main()
 
                 if (command_finished){
                     printf("%s\n", huge_buffer);
+                    if ((command_id == COMPILAR) and (strcmp(huge_buffer, "") == 0))
+                        printf("success\n");
                 }
                 else{
                     printf("command failed.\n");
