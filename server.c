@@ -12,7 +12,7 @@ char path[STR_MAX];
 
 int parse_command_packet(packet_t* packet, int* type, char* data, int* data_size)
 {
-    printf("packet type %d\n", packet->type);
+    // printf("packet type %d\n", packet->type);
     if (packet->type == CD)
     {
         printf("cd to %s\n", packet->data);
@@ -132,7 +132,7 @@ int parse_command_packet(packet_t* packet, int* type, char* data, int* data_size
 
     if (packet->type == COMPILAR)
     {
-        printf("Got COMPILAR\n");
+        printf("Got COMPILAR on %d\n", packet->packet_id);
         *type = ACK;
         *data_size = 0;
         return COMPILAR;
@@ -249,7 +249,7 @@ int main()
                             if (send_retval == -1)
                                 printf("Could not send response.\n");
 
-                            usleep(TIME_BETWEEN_TRIES);
+                            usleep(TIME_BETWEEN_SEND_TRIES);
 
                             // try to receive LINHAS_INDEXES from client
                             int type_of_request = LINHAS_INDEXES;
@@ -302,7 +302,7 @@ int main()
                                     if (recv_retval != -1)
                                     {
                                         if (request.origin_address == CLIENT){
-                                            printf("Didnt want %d. wanted %d\n", request.packet_id, (msg_counter + 1) % 16);
+                                            // printf("Didnt want %d. wanted %d\n", request.packet_id, (msg_counter + 1) % 16);
                                             // print_packet(&request);
                                             // printf("\n");
                                         }
@@ -380,7 +380,7 @@ int main()
                             printf("Could not send response.\n");
 
                         msg_counter = (msg_counter + 2) % 16;
-                        usleep(TIME_BETWEEN_TRIES);
+                        usleep(TIME_BETWEEN_SEND_TRIES);
                     }
                     
                     // RECEIVE DATA STREAM FROM CLIENT
@@ -452,7 +452,7 @@ int main()
                                 if (send_retval == -1)
                                     printf("Error: nothing was sent.\n");
 
-                                usleep(TIME_BETWEEN_TRIES);
+                                usleep(TIME_BETWEEN_SEND_TRIES);
 
                                 // receive FILE_CONTENT from client
                                 bool got_something = false;
@@ -571,6 +571,7 @@ int main()
 
                         else{
                             printf("DATA STREAM error.\n");
+                            command_id = NOP;
                         }
                         
 
@@ -634,7 +635,7 @@ int main()
                             if (send_retval == -1)
                                 printf("Could not send LS data\n");
 
-                            usleep(TIME_BETWEEN_TRIES);
+                            usleep(TIME_BETWEEN_SEND_TRIES);
                             
 
                             // get acknowledgement FROM CLIENT
@@ -684,7 +685,7 @@ int main()
                                 else
                                 {
                                     if ((recv_retval != -1) and request.origin_address == CLIENT){
-                                        // printf("Didnt want %d. wanted %d\n", request.packet_id, (msg_counter + 1) % 16);
+                                        printf("Didnt want %d. wanted %d\n", request.packet_id, (msg_counter + 1) % 16);
                                         // print_packet(&request);
                                     }
                                     recv_counter++;
@@ -692,6 +693,7 @@ int main()
                                 if (sent_succexy)
                                     msg_counter = (msg_counter + 2) % 16;
 
+                                usleep(TIME_BETWEEN_RECV_TRIES);
                             }
                             send_counter++;
                         }
@@ -711,12 +713,12 @@ int main()
                                 make_packet_array(packet_array, &response);
                                 send_retval = send(socket, &packet_array, PACKET_MAX_BYTES, 0);
                                 if (send_retval != -1)
-                                    printf("\nSent END\n");
+                                    printf("\nSent END on %d\n", response.packet_id);
                                 else
                                     printf("Could not send END\n");
 
 
-                                usleep(TIME_BETWEEN_TRIES);
+                                usleep(TIME_BETWEEN_SEND_TRIES);
 
                                 bool got_something = false;
                                 int recv_counter = 0;
@@ -730,15 +732,15 @@ int main()
                                         memset(packet_array, 0, PACKET_MAX_BYTES);
 
                                     // check for last ACK
-                                    if ((recv_retval != -1) and (valid_packet(&request, (msg_counter + 1) % 16))
-                                        and request.origin_address == CLIENT)
+                                    if ((recv_retval != -1) and request.origin_address == CLIENT)
                                     {
                                         // REAL PACKAGE!!!!
                                         if (request.type == NACK)
                                         {
                                             got_something = true;
+                                            send_counter = 0;
                                         }
-                                        else if (request.type == ACK)
+                                        else if ((request.type == ACK) and (valid_packet(&request, (msg_counter + 1) % 16)))
                                         {
                                             sent_succexy = true;
                                             got_something = true;
@@ -749,6 +751,7 @@ int main()
                                     {
                                         recv_counter++;
                                     }
+                                    usleep(TIME_BETWEEN_RECV_TRIES);
                                 }
                                 send_counter++;
                             }
@@ -782,7 +785,7 @@ int main()
                         if (send_retval == -1)
                             printf("Could not resend message\n");
                         
-                        usleep(TIME_BETWEEN_TRIES);
+                        usleep(TIME_BETWEEN_SEND_TRIES);
                     }
                 }
             } 
