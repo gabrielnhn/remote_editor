@@ -161,7 +161,7 @@ int main()
                     if (send_retval == -1)
                         printf("Error: nothing was sent.\n");
 
-                    usleep(TIME_BETWEEN_TRIES);
+                    usleep(TIME_BETWEEN_SEND_TRIES);
 
                     // receive response FROM SERVER
                     bool got_something = false;
@@ -169,6 +169,7 @@ int main()
 
                     while (not got_something and (recv_counter < MAX_RECEIVE_TRIES))
                     {
+                        usleep(TIME_BETWEEN_RECV_TRIES);
                         recv_retval = recv(socket,&packet_array, PACKET_MAX_BYTES, 0);
 
                         if (recv_retval != -1)
@@ -201,7 +202,7 @@ int main()
 
                             recv_counter++;
                         }
-                        usleep(TIME_BETWEEN_TRIES);
+                        usleep(TIME_BETWEEN_SEND_TRIES);
 
                     }
                     send_counter++;
@@ -284,7 +285,7 @@ int main()
                     if (send_retval == -1)
                         printf("Could not send LINHA(S)\n");
 
-                    usleep(TIME_BETWEEN_TRIES);
+                    usleep(TIME_BETWEEN_SEND_TRIES);
                     
                     // get acknowledgement FROM SERVER
                     bool got_something = false;
@@ -292,6 +293,7 @@ int main()
 
                     while (not got_something and (recv_counter < MAX_RECEIVE_TRIES))
                     {
+                        usleep(TIME_BETWEEN_RECV_TRIES);
                         recv_retval = recv(socket,&packet_array, PACKET_MAX_BYTES, 0);
 
                         if (recv_retval != -1)
@@ -391,7 +393,7 @@ int main()
                     if (send_retval == -1)
                         printf("Could not send LS data\n");
 
-                    usleep(TIME_BETWEEN_TRIES);
+                    usleep(TIME_BETWEEN_SEND_TRIES);
                     
 
                     // get acknowledgement FROM SERVER
@@ -400,6 +402,7 @@ int main()
 
                     while (not got_something and (recv_counter < MAX_RECEIVE_TRIES))
                     {
+                        usleep(TIME_BETWEEN_RECV_TRIES);
                         recv_retval = recv(socket,&packet_array, PACKET_MAX_BYTES, 0);
 
                         if (recv_retval != -1)
@@ -441,7 +444,7 @@ int main()
                         else
                         {
                             if ((recv_retval != -1) and response.origin_address == SERVER){
-                                // printf("Didnt want %d. wanted %d\n", response.packet_id, (msg_counter + 1) % 16);
+                                printf("2 Didnt want %d. wanted %d\n", response.packet_id, (msg_counter + 1) % 16);
                                 // print_packet(&response);
                             }
                             recv_counter++;
@@ -476,13 +479,14 @@ int main()
                             printf("Could not send END\n");
 
 
-                        usleep(TIME_BETWEEN_TRIES);
+                        usleep(TIME_BETWEEN_SEND_TRIES);
 
                         bool got_something = false;
                         int recv_counter = 0;
 
                         while (not got_something and (recv_counter < MAX_RECEIVE_TRIES))
                         {
+                            usleep(TIME_BETWEEN_RECV_TRIES);
                             recv_retval = recv(socket,&packet_array, PACKET_MAX_BYTES, 0);
                             if (recv_retval != -1)
                                 get_packet_from_array(packet_array, &response);
@@ -519,7 +523,7 @@ int main()
                     else
                     {
                         printf("Done.\n");
-                        usleep(TIME_BETWEEN_TRIES);
+                        usleep(TIME_BETWEEN_SEND_TRIES);
                     }
                         
                 }
@@ -565,6 +569,9 @@ int main()
                     type = ACK;
                     request_validated = true;
                     data_size = 0;
+                    if (command_id == COMPILAR)
+                        usleep(10*TIME_BETWEEN_SEND_TRIES);
+
                 }
                 
                 strcpy(huge_buffer, "");
@@ -598,7 +605,7 @@ int main()
                         if (send_retval == -1)
                             printf("Error: nothing was sent.\n");
 
-                        usleep(TIME_BETWEEN_TRIES);
+                        usleep(TIME_BETWEEN_SEND_TRIES);
 
                         // receive LS_CONTENT from server
                         bool got_something = false;
@@ -615,6 +622,7 @@ int main()
                                and not data_stream_finished)
                         // if data_stream_finished, client won't receive LS_CONTENT anymore.
                         {
+                            usleep(TIME_BETWEEN_RECV_TRIES);
 
                             recv_retval = recv(socket,&packet_array, PACKET_MAX_BYTES, 0);
 
@@ -663,7 +671,7 @@ int main()
                                 if (recv_retval != -1)
                                 {
                                     if (response.origin_address == SERVER){
-                                        printf("Didnt want %d. wanted %d\n", response.packet_id, (msg_counter + 1) % 16);
+                                        printf("3 Didnt want %d. wanted %d\n", response.packet_id, (msg_counter + 1) % 16);
                                         // print_packet(&response);
                                         // printf("\n");
                                     }
