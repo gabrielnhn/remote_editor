@@ -16,9 +16,9 @@
 #include <sys/time.h>
 
 #define MAX_SEND_TRIES 5
-#define MAX_RECEIVE_TRIES 3000
+#define MAX_RECEIVE_TRIES 30
 //microsec
-#define TIME_BETWEEN_SEND_TRIES 1000 //* 100 //* 3
+#define TIME_BETWEEN_SEND_TRIES 1000 
 #define TIME_BETWEEN_RECV_TRIES 1000
 
 int raw_socket_connection(char *device);
