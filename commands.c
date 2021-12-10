@@ -192,14 +192,14 @@ int get_line(char* path, int line_index, char* destination)
 
     // lê TODAS as linhas do arquivo
     i = 1 ;
-    fgets (line, STR_MAX, f);
+    char* fget_retval = fgets (line, STR_MAX, f);
     while (not feof (f) and i < line_index)
     {
-        fgets (line, STR_MAX, f) ;   // tenta ler a próxima linha
+        fget_retval = fgets (line, STR_MAX, f) ;   // tenta ler a próxima linha
         i++ ;
     }
 
-    if (feof(f))
+    if ((fget_retval == NULL) and (feof(f)))
     {
         retval = LINE_DOES_NOT_EXIST;
     }
@@ -240,19 +240,22 @@ int get_lines(char* path, int line1, int line2, char* destination)
 
     // lê TODAS as linhas do arquivo
     i = 1 ;
-    fgets (line, STR_MAX, f);
+    char* fget_retval = fgets (line, STR_MAX, f);
     while (not feof (f) and i < line1)
     {
-        fgets (line, STR_MAX, f) ;   // tenta ler a próxima linha
+        fget_retval = fgets (line, STR_MAX, f) ;   // tenta ler a próxima linha
         i++ ;
     }
 
     while (not feof (f) and i < line2)
     {
         strcat(destination, line);
-        fgets (line, STR_MAX, f) ;   // tenta ler a próxima linha
+        fget_retval = fgets (line, STR_MAX, f) ;   // tenta ler a próxima linha
         i++ ;
     }
+    if (fget_retval != NULL)
+        strcat(destination, line);
+
 
     if (feof(f))
     {
