@@ -133,13 +133,18 @@ int indexed_cat(char* path, char* destination)
 
     // lê TODAS as linhas do arquivo
     i = 1 ;
-    fgets (line, STR_MAX, f);
+    char* fget_retval = fgets (line, STR_MAX, f);
     while (not feof (f))
     {
         sprintf(buffer, "%d: %s", i, line);
         strcat(destination, buffer);
-        fgets (line, STR_MAX, f) ;   // tenta ler a próxima linha
+        fget_retval = fgets (line, STR_MAX, f) ;   // tenta ler a próxima linha
         i++ ;
+    }
+    if (fget_retval != NULL)
+    {
+        sprintf(buffer, "%d: %s", i, line);
+        strcat(destination, buffer);
     }
 
     // fecha o arquivo
