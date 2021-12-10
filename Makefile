@@ -9,5 +9,5 @@ server: server.c raw_socket.c network.h packet.c packet.h bitwise.h bitwise.c co
 	gcc -o server -Wall server.c raw_socket.c packet.c bitwise.c commands.c -g
 
 clean:
-	rm -rf server client a.out
+	rm -rf server client
 	
