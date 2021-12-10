@@ -202,9 +202,9 @@ int main()
                 {
                     duplicate = true;
                     same_counter += 1;
-                    printf("SAME COUNTER %d\n", same_counter);
+                    printf("GOT REPEATED MESSAGE, COUNTER == %d\n", same_counter);
                     if (same_counter > MAX_SEND_TRIES){
-                        printf("false bruh\n");
+                        printf("Will consider it.\n");
                         duplicate = false;
                     }
                 }
@@ -221,7 +221,6 @@ int main()
                     same_counter = 0;
                     msg_counter = (request.packet_id) % 16;
                     duplicate = false;
-                    printf("Duplicate=false\n");
                     // execute command
                     int command_id = parse_command_packet(&request, &type, data, &data_size);
 
@@ -318,7 +317,7 @@ int main()
                                     if (recv_retval != -1)
                                     {
                                         if (request.origin_address == CLIENT){
-                                            printf("1 Didnt want %d. wanted %d\n", request.packet_id, (msg_counter + 1) % 16);
+                                            // printf("1 Didnt want %d. wanted %d\n", request.packet_id, (msg_counter + 1) % 16);
                                             // print_packet(&request);
                                             // printf("\n");
                                         }
@@ -463,7 +462,7 @@ int main()
                                 // print_packet(&response);
                                 
                                 // send ACK/NACK
-                                printf("sending packet, id %d, type %d\n", response.packet_id, response.type);
+                                // printf("sending packet, id %d, type %d\n", response.packet_id, response.type);
                                 send_retval = send(socket, &packet_array, PACKET_MAX_BYTES, 0);
                                 if (send_retval == -1)
                                     printf("Error: nothing was sent.\n");
@@ -501,7 +500,7 @@ int main()
                                         if (request.type == type_of_request)
                                         {
                                             response_validated = true;
-                                            printf("Got content: '%s' on id %d\n", request.data, request.packet_id);
+                                            // printf("Got content: '%s' on id %d\n", request.data, request.packet_id);
                                             strcat(huge_buffer, request.data);
                                             got_something = true;
                                             got_succexy = true;
@@ -532,13 +531,13 @@ int main()
                                         if (recv_retval != -1)
                                         {
                                             if (request.origin_address == CLIENT){
-                                                printf("2 Didnt want %d. wanted %d\n", request.packet_id, (msg_counter + 1) % 16);
+                                                // printf("2 Didnt want %d. wanted %d\n", request.packet_id, (msg_counter + 1) % 16);
                                                 // print_packet(&request);
                                                 // printf("\n");
                                             }
                                         }
                                         else
-                                            printf("LOL -1\n");
+                                            printf("No response.\n");
                                         recv_counter++;
                                     }
                                 }
@@ -559,7 +558,7 @@ int main()
                                 else
                                 {
                                     msg_counter = (msg_counter + 2) % 16;
-                                    printf("counter: %d\n", msg_counter);
+                                    // printf("counter: %d\n", msg_counter);
                                     type = ACK;
                                 }
                             }
@@ -630,7 +629,7 @@ int main()
                                 // Set next response packet
                                 memset(response.data, 0, DATA_BYTES);
                                 strncpy(response.data, huge_buffer + huge_buffer_counter, 14);
-                                printf("sending response.data: '%s'\n", response.data);
+                                // printf("sending response.data: '%s'\n", response.data);
                                 // print_packet
 
                                 huge_buffer_counter += strlen(response.data);
@@ -647,7 +646,7 @@ int main()
                             }
 
                             // send response
-                            printf("Sending packet, id %d, type %d \n", response.packet_id, response.packet_id);
+                            // printf("Sending packet, id %d, type %d \n", response.packet_id, response.packet_id);
                             send_retval = send(socket, &packet_array, PACKET_MAX_BYTES, 0);
 
                             if (send_retval == -1)
@@ -686,7 +685,7 @@ int main()
                                     }
                                     else if (request.type == ACK)
                                     {
-                                        printf("GOT ACK %d\n", request.packet_id);
+                                        // printf("GOT ACK %d\n", request.packet_id);
                                         sent_succexy = true;
                                         got_something = true;
                                     }
@@ -812,7 +811,7 @@ int main()
             } 
             else // message was ignored.
             {
-                printf("ignored %d.\n", request.packet_id);
+                printf("ignored %d, ", request.packet_id);
                 if (duplicate)
                     printf("duplicate\n");
                 else

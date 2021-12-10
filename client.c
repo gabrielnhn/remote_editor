@@ -184,14 +184,16 @@ int main()
                             // printf("Got something\n");
                             if (response.type == ACK or response.type == ERROR)
                             {
-                                printf("Got ACK\n");
+                                // printf("Got ACK\n");
                                 
                                 command_retval = *response.data;
                                 got_something = true;
                                 sent_succexy = true;
                             }
                             else
+                            {
                                 printf("Got unexpected type %d\n", response.type);
+                            }
                         }
                         else
                         {
@@ -370,7 +372,7 @@ int main()
                         // Set next request packet
                         memset(request.data, 0, DATA_BYTES);
                         strncpy(request.data, huge_buffer + huge_buffer_counter, 14);
-                        printf("sending request.data: '%s'\n", request.data);
+                        // printf("sending request.data: '%s'\n", request.data);
                         // print_packet
 
                         huge_buffer_counter += strlen(request.data);
@@ -387,7 +389,7 @@ int main()
                     }
 
                     // send request
-                    printf("Sending packet, id %d, \n", request.packet_id);
+                    // printf("Sending packet, id %d, \n", request.packet_id);
                     send_retval = send(socket, &packet_array, PACKET_MAX_BYTES, 0);
 
                     if (send_retval == -1)
@@ -415,18 +417,18 @@ int main()
                         if ((recv_retval != -1) and (valid_packet(&response, (msg_counter + 1) % 16))
                             and response.origin_address == SERVER)
                         {
-                            printf("Got %d\n", response.packet_id);
+                            // printf("Got %d\n", response.packet_id);
                             // REAL PACKAGE!!!!
 
                             if (response.type == NACK)
                             {
-                                printf("GOT NACK\n");
+                                // printf("GOT NACK\n");
                                 sent_succexy = false;
                                 got_something = true;
                             }
                             else if (response.type == ACK)
                             {
-                                printf("GOT ACK %d\n", response.packet_id);
+                                // printf("GOT ACK %d\n", response.packet_id);
                                 sent_succexy = true;
                                 got_something = true;
                             }
@@ -444,7 +446,7 @@ int main()
                         else
                         {
                             if ((recv_retval != -1) and response.origin_address == SERVER){
-                                printf("2 Didnt want %d. wanted %d\n", response.packet_id, (msg_counter + 1) % 16);
+                                // printf("2 Didnt want %d. wanted %d\n", response.packet_id, (msg_counter + 1) % 16);
                                 // print_packet(&response);
                             }
                             recv_counter++;
@@ -474,9 +476,11 @@ int main()
                         make_packet_array(packet_array, &request);
                         send_retval = send(socket, &packet_array, PACKET_MAX_BYTES, 0);
                         if (send_retval != -1)
-                            printf("\nSent END as id %d\n", msg_counter);
+                        {
+                            // printf("\nSent END as id %d\n", msg_counter);
+                        }
                         else
-                            printf("Could not send END\n");
+                            printf("Could not send END signal\n");
 
 
                         usleep(TIME_BETWEEN_SEND_TRIES);
@@ -529,7 +533,7 @@ int main()
                 }
                 else
                 {
-                    printf("failed to send file\n");
+                    printf("failed to send data stream\n");
                 }
                 msg_counter = (msg_counter + 1) % 16;
             }
@@ -636,12 +640,12 @@ int main()
                             if ((recv_retval != -1) and valid_packet(&response, (msg_counter + 1) % 16)
                                 and response.origin_address == SERVER)
                             {
-                                printf("Got something\n");
+                                // printf("Got something\n");
                                 // REAL PACKAGE!!!!
                                 if (response.type == type_of_response)
                                 {
                                     request_validated = true;
-                                    printf("Got content: '%s'\n", response.data);
+                                    // printf("Got content: '%s'\n", response.data);
                                     strcat(huge_buffer, response.data);
                                     got_something = true;
                                     got_succexy = true;
@@ -671,7 +675,7 @@ int main()
                                 if (recv_retval != -1)
                                 {
                                     if (response.origin_address == SERVER){
-                                        printf("3 Didnt want %d. wanted %d\n", response.packet_id, (msg_counter + 1) % 16);
+                                        // printf("3 Didnt want %d. wanted %d\n", response.packet_id, (msg_counter + 1) % 16);
                                         // print_packet(&response);
                                         // printf("\n");
                                     }
