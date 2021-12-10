@@ -8,6 +8,9 @@
 
 // RETURN VALUES
 #define SUCCEXY 0
+// Succexy, song by Metric
+// https://open.spotify.com/track/2RCW6UGqMit6POan7k5h6X
+
 #define FORBIDDEN 1
 #define DIR_DOES_NOT_EXIST 2
 #define FILE_DOES_NOT_EXIST 3
